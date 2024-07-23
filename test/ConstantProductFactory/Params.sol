@@ -1,35 +1,83 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import {IERC20} from "src/ConstantProductFactory.sol";
-
+import "forge-std/console.sol";
 import {ConstantProductFactoryTestHarness} from "./ConstantProductFactoryTestHarness.sol";
 
-abstract contract Params is ConstantProductFactoryTestHarness {
-    function testAnyoneCanDeposit() public {
-        address anyone = makeAddr("Deposit: an arbitrary address");
-        uint256 amount0 = 1234;
-        uint256 amount1 = 5678;
+import {V3MathLib} from "@src/libraries/V3MathLib.sol";
+import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
+import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
+import {TickMath} from "@v4-core/libraries/TickMath.sol";
 
-        address token0 = address(constantProduct.token0());
-        address token1 = address(constantProduct.token1());
-        vm.expectCall(
-            token0,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (anyone, address(constantProduct), amount0)
-            ),
-            1
+contract Params is ConstantProductFactoryTestHarness {
+    function test_uniswapV3_math() public {
+        uint256 priceLower = 4545 ether;
+        uint256 currentPrice = 5000 ether;
+        uint256 priceUpper = 5500 ether;
+
+        int24 tickLower = V3MathLib.getTickFromPrice(priceLower);
+        int24 tickCurrent = V3MathLib.getTickFromPrice(currentPrice);
+        int24 tickUpper = V3MathLib.getTickFromPrice(priceUpper);
+
+        assertEq(tickLower, 84222);
+        assertEq(tickCurrent, 85176);
+        assertEq(tickUpper, 86129);
+
+        console.log("Liquidity for amounts");
+        uint256 amount0 = 1 ether;
+        uint128 liquidityFor0 = LiquidityAmounts.getLiquidityForAmount0(
+            TickMath.getSqrtPriceAtTick(tickLower),
+            TickMath.getSqrtPriceAtTick(tickUpper),
+            amount0
         );
-        vm.expectCall(
-            token1,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (anyone, address(constantProduct), amount1)
-            ),
-            1
+
+        console.log(liquidityFor0);
+        console.log(1519437308014769733632);
+        // assertEq(liquidityFor0, 1000);
+
+        uint256 amount1 = 5000 ether;
+        uint128 liquidityFor1 = LiquidityAmounts.getLiquidityForAmount1(
+            TickMath.getSqrtPriceAtTick(tickLower),
+            TickMath.getSqrtPriceAtTick(tickUpper),
+            amount1
         );
-        vm.prank(anyone);
-        constantProductFactory.deposit(constantProduct, amount0, amount1);
+
+        console.log(liquidityFor1);
+        console.log(1517882343751509868544);
+
+        uint128 liquidityForAmounts = LiquidityAmounts.getLiquidityForAmounts(
+            TickMath.getSqrtPriceAtTick(tickCurrent),
+            TickMath.getSqrtPriceAtTick(tickLower),
+            TickMath.getSqrtPriceAtTick(tickUpper),
+            amount0,
+            amount1
+        );
+
+        console.log(liquidityForAmounts);
+        console.log(1517882343751509868544);
+
+        console.log("Amounts fro Liquidity");
+        amount0 = LiquidityAmounts.getAmount0ForLiquidity(
+            TickMath.getSqrtPriceAtTick(tickLower),
+            TickMath.getSqrtPriceAtTick(tickUpper),
+            liquidityFor0
+        );
+        console.log(amount0);
+
+        amount1 = LiquidityAmounts.getAmount1ForLiquidity(
+            TickMath.getSqrtPriceAtTick(tickLower),
+            TickMath.getSqrtPriceAtTick(tickUpper),
+            liquidityFor1
+        );
+        console.log(amount1);
+
+        (amount0, amount1) = LiquidityAmounts.getAmountsForLiquidity(
+            TickMath.getSqrtPriceAtTick(tickCurrent),
+            TickMath.getSqrtPriceAtTick(tickLower),
+            TickMath.getSqrtPriceAtTick(tickUpper),
+            liquidityForAmounts
+        );
+        console.log(amount0);
+        console.log(amount1);
     }
 }

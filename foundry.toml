@@ -11,6 +11,9 @@ remappings = [
   "lib/composable-cow:safe/=lib/composable-cow/lib/safe/contracts/",
   "lib/composable-cow:@openzeppelin/=lib/openzeppelin/contracts/",
   "lib/composable-cow:@openzeppelin/contracts/=lib/openzeppelin/contracts/",
+  "@v4-core/=lib/v4-core/src/",
+  "@v4-core-test/=lib/v4-core/test/", 
+  "@src/=src/",
   "lib/composable-cow:cowprotocol/=lib/composable-cow/lib/cowprotocol/src/"
 ]
 
