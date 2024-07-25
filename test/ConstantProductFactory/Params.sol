@@ -10,7 +10,7 @@ import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
 import {TickMath} from "@v4-core/libraries/TickMath.sol";
 
 contract Params is ConstantProductFactoryTestHarness {
-    function test_uniswapV3_math() public {
+    function test_uniswapV3_math_liquidity() public {
         uint256 priceLower = 4545 ether;
         uint256 currentPrice = 5000 ether;
         uint256 priceUpper = 5500 ether;
@@ -79,5 +79,53 @@ contract Params is ConstantProductFactoryTestHarness {
         );
         console.log(amount0);
         console.log(amount1);
+    }
+
+    function test_uniswapV3_math_swap() public {
+        uint256 priceLower = 4545 ether;
+        uint256 currentPrice = 5000 ether;
+        uint256 priceUpper = 5500 ether;
+
+        int24 tickLower = V3MathLib.getTickFromPrice(priceLower);
+        int24 tickCurrent = V3MathLib.getTickFromPrice(currentPrice);
+        int24 tickUpper = V3MathLib.getTickFromPrice(priceUpper);
+
+        uint256 amount0 = 1 ether;
+        uint256 amount1 = 5000 ether;
+
+        uint128 liquidity = LiquidityAmounts.getLiquidityForAmounts(
+            TickMath.getSqrtPriceAtTick(tickCurrent),
+            TickMath.getSqrtPriceAtTick(tickLower),
+            TickMath.getSqrtPriceAtTick(tickUpper),
+            amount0,
+            amount1
+        );
+
+        uint256 damount1 = 42 ether;
+
+        // liquidity = 1517882343751509868544;
+        console.log(damount1);
+        console.log(liquidity);
+        uint256 dSqrtP = (damount1 * 2 ** 96) / liquidity;
+        console.log(dSqrtP);
+
+        uint256 sqrtNext = TickMath.getSqrtPriceAtTick(tickCurrent) + dSqrtP;
+        console.log(sqrtNext);
+
+        console.log("Amounts out");
+        console.log(
+            LiquidityAmounts.getAmount0ForLiquidity(
+                V3MathLib.toUint160(sqrtNext),
+                TickMath.getSqrtPriceAtTick(tickCurrent),
+                liquidity
+            )
+        );
+        console.log(
+            LiquidityAmounts.getAmount1ForLiquidity(
+                V3MathLib.toUint160(sqrtNext),
+                TickMath.getSqrtPriceAtTick(tickCurrent),
+                liquidity
+            )
+        );
     }
 }

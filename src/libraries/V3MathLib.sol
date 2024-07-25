@@ -36,7 +36,7 @@ library V3MathLib {
         return int24(value);
     }
 
-    function toUint160(uint256 value) internal pure returns (uint160) {
+    function toUint160(uint256 value) public pure returns (uint160) {
         require(value <= type(uint160).max, "MH2");
         return uint160(value);
     }
