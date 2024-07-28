@@ -22,16 +22,6 @@ library V3MathLib {
                     amount0.mul(uint256(sqrtPriceCurrentX96)).div(2 ** 96)
             )
         );
-        console.log("calculation fix");
-        console.log(liquidity);
-        console.log(amount0);
-        console.log(sqrtPriceCurrentX96);
-        console.log("-> target: ", 1518722859563203690496);
-        console.log(
-            "-> current:",
-            uint256(liquidity) +
-                amount0.mul(uint256(sqrtPriceCurrentX96)).div(2 ** 96)
-        );
         console.log(">>sqrtPriceNextX96 (0)", sqrtPriceNextX96);
         console.log(">>sqrtPriceCurrentX96 ", sqrtPriceCurrentX96);
         console.log(">>liquidity", liquidity);
