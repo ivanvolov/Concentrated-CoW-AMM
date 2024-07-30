@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
+import "forge-std/console.sol";
+
 import {IERC20 as OZIERC20} from "lib/openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC1271} from "lib/openzeppelin/contracts/interfaces/IERC1271.sol";
 import {SafeERC20} from "lib/openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -65,7 +67,8 @@ contract ConstantProduct is IERC1271 {
      * @dev This value is:
      * uint256(keccak256("CoWAMM.ConstantProduct.commitment")) - 1
      */
-    uint256 public constant COMMITMENT_SLOT = 0x6c3c90245457060f6517787b2c4b8cf500ca889d2304af02043bd5b513e3b593;
+    uint256 public constant COMMITMENT_SLOT =
+        0x6c3c90245457060f6517787b2c4b8cf500ca889d2304af02043bd5b513e3b593;
 
     /**
      * @notice The address of the CoW Protocol settlement contract. It is the
@@ -184,7 +187,9 @@ contract ConstantProduct is IERC1271 {
      * @param tradingParams Trading is enabled with the parameters specified
      * here.
      */
-    function enableTrading(TradingParams calldata tradingParams) external onlyManager {
+    function enableTrading(
+        TradingParams calldata tradingParams
+    ) external onlyManager {
         bytes32 _tradingParamsHash = hash(tradingParams);
         tradingParamsHash = _tradingParamsHash;
         emit TradingEnabled(_tradingParamsHash, tradingParams);
@@ -218,9 +223,12 @@ contract ConstantProduct is IERC1271 {
     /**
      * @inheritdoc IERC1271
      */
-    function isValidSignature(bytes32 _hash, bytes calldata signature) external view returns (bytes4) {
-        (GPv2Order.Data memory order, TradingParams memory tradingParams) =
-            abi.decode(signature, (GPv2Order.Data, TradingParams));
+    function isValidSignature(
+        bytes32 _hash,
+        bytes calldata signature
+    ) external view returns (bytes4) {
+        (GPv2Order.Data memory order, TradingParams memory tradingParams) = abi
+            .decode(signature, (GPv2Order.Data, TradingParams));
 
         if (hash(tradingParams) != tradingParamsHash) {
             revert TradingParamsDoNotMatchHash();
@@ -246,11 +254,20 @@ contract ConstantProduct is IERC1271 {
      * from this AMM
      * @return order the tradeable order for submission to the CoW Protocol API
      */
-    function getTradeableOrder(TradingParams memory tradingParams) public view returns (GPv2Order.Data memory order) {
-        (uint256 priceNumerator, uint256 priceDenominator) =
-            tradingParams.priceOracle.getPrice(address(token0), address(token1), tradingParams.priceOracleData);
-        (uint256 selfReserve0, uint256 selfReserve1) =
-            (token0.balanceOf(address(this)), token1.balanceOf(address(this)));
+    function getTradeableOrder(
+        TradingParams memory tradingParams
+    ) public view returns (GPv2Order.Data memory order) {
+        (uint256 priceNumerator, uint256 priceDenominator) = tradingParams
+            .priceOracle
+            .getPrice(
+                address(token0),
+                address(token1),
+                tradingParams.priceOracleData
+            );
+        (uint256 selfReserve0, uint256 selfReserve1) = (
+            token0.balanceOf(address(this)),
+            token1.balanceOf(address(this))
+        );
 
         IERC20 sellToken;
         IERC20 buyToken;
@@ -269,33 +286,74 @@ contract ConstantProduct is IERC1271 {
         // given the sell amount. This is intended because we want to force
         // solvers to maximize the surplus for this order with the price that
         // isn't the AMM best price.
-        uint256 selfReserve0TimesPriceDenominator = selfReserve0 * priceDenominator;
+        console.log("> getTradeableOrder");
+        console.log("selfReserve0   :", selfReserve0);
+        console.log("selfReserve1   :", selfReserve1);
+
+        console.log("priceNum       :", priceNumerator);
+        console.log("priceDen       :", priceDenominator);
+
+        uint256 selfReserve0TimesPriceDenominator = selfReserve0 *
+            priceDenominator;
         uint256 selfReserve1TimesPriceNumerator = selfReserve1 * priceNumerator;
+
+        console.log("selfR0*Denom   :", selfReserve0TimesPriceDenominator);
+        console.log("selfR1*Num     :", selfReserve1TimesPriceNumerator);
+
         uint256 tradedAmountToken0;
-        if (selfReserve1TimesPriceNumerator < selfReserve0TimesPriceDenominator) {
+        if (
+            selfReserve1TimesPriceNumerator < selfReserve0TimesPriceDenominator
+        ) {
+            console.log("case 1");
             sellToken = token0;
             buyToken = token1;
-            sellAmount = sub(selfReserve0 / 2, Math.ceilDiv(selfReserve1TimesPriceNumerator, 2 * priceDenominator));
+            sellAmount = sub(
+                selfReserve0 / 2,
+                Math.ceilDiv(
+                    selfReserve1TimesPriceNumerator,
+                    2 * priceDenominator
+                )
+            );
+            console.log("~", selfReserve0 / 2);
+            console.log(
+                "~",
+                Math.ceilDiv(
+                    selfReserve1TimesPriceNumerator,
+                    2 * priceDenominator
+                )
+            );
             buyAmount = Math.mulDiv(
                 sellAmount,
-                selfReserve1TimesPriceNumerator + (priceDenominator * sellAmount),
+                selfReserve1TimesPriceNumerator +
+                    (priceDenominator * sellAmount),
                 priceNumerator * selfReserve0,
                 Math.Rounding.Up
             );
             tradedAmountToken0 = sellAmount;
         } else {
+            console.log("case 2");
             sellToken = token1;
             buyToken = token0;
-            sellAmount = sub(selfReserve1 / 2, Math.ceilDiv(selfReserve0TimesPriceDenominator, 2 * priceNumerator));
+            sellAmount = sub(
+                selfReserve1 / 2,
+                Math.ceilDiv(
+                    selfReserve0TimesPriceDenominator,
+                    2 * priceNumerator
+                )
+            );
             buyAmount = Math.mulDiv(
                 sellAmount,
-                selfReserve0TimesPriceDenominator + (priceNumerator * sellAmount),
+                selfReserve0TimesPriceDenominator +
+                    (priceNumerator * sellAmount),
                 priceDenominator * selfReserve1,
                 Math.Rounding.Up
             );
             tradedAmountToken0 = buyAmount;
         }
 
+        console.log("tradedAmountToken0", tradedAmountToken0);
+        console.log("sellAmount", sellAmount);
+        console.log("buyAmount", buyAmount);
         if (tradedAmountToken0 < tradingParams.minTradedToken0) {
             revertPollAtNextBlock("traded amount too small");
         }
@@ -323,7 +381,10 @@ contract ConstantProduct is IERC1271 {
      * from this AMM
      * @param order `GPv2Order.Data` of a discrete order to be verified.
      */
-    function verify(TradingParams memory tradingParams, GPv2Order.Data memory order) public view {
+    function verify(
+        TradingParams memory tradingParams,
+        GPv2Order.Data memory order
+    ) public view {
         IERC20 sellToken = token0;
         IERC20 buyToken = token1;
         if (order.sellToken != sellToken) {
@@ -340,12 +401,16 @@ contract ConstantProduct is IERC1271 {
         }
 
         if (order.receiver != GPv2Order.RECEIVER_SAME_AS_OWNER) {
-            revert IConditionalOrder.OrderNotValid("receiver must be zero address");
+            revert IConditionalOrder.OrderNotValid(
+                "receiver must be zero address"
+            );
         }
         // We add a maximum duration to avoid spamming the orderbook and force
         // an order refresh if the order is old.
         if (order.validTo > block.timestamp + MAX_ORDER_DURATION) {
-            revert IConditionalOrder.OrderNotValid("validity too far in the future");
+            revert IConditionalOrder.OrderNotValid(
+                "validity too far in the future"
+            );
         }
         if (order.appData != tradingParams.appData) {
             revert IConditionalOrder.OrderNotValid("invalid appData");
@@ -354,14 +419,21 @@ contract ConstantProduct is IERC1271 {
             revert IConditionalOrder.OrderNotValid("fee amount must be zero");
         }
         if (order.buyTokenBalance != GPv2Order.BALANCE_ERC20) {
-            revert IConditionalOrder.OrderNotValid("buyTokenBalance must be erc20");
+            revert IConditionalOrder.OrderNotValid(
+                "buyTokenBalance must be erc20"
+            );
         }
         if (order.sellTokenBalance != GPv2Order.BALANCE_ERC20) {
-            revert IConditionalOrder.OrderNotValid("sellTokenBalance must be erc20");
+            revert IConditionalOrder.OrderNotValid(
+                "sellTokenBalance must be erc20"
+            );
         }
         // These are the checks needed to satisfy the conditions on in/out
         // amounts for a constant-product curve AMM.
-        if ((sellReserve - order.sellAmount) * order.buyAmount < buyReserve * order.sellAmount) {
+        if (
+            (sellReserve - order.sellAmount) * order.buyAmount <
+            buyReserve * order.sellAmount
+        ) {
             revert IConditionalOrder.OrderNotValid("received amount too low");
         }
 
@@ -410,7 +482,10 @@ contract ConstantProduct is IERC1271 {
      * watchtower to poll for new order when the next block is mined.
      */
     function revertPollAtNextBlock(string memory message) internal view {
-        revert IWatchtowerCustomErrors.PollTryAtBlock(block.number + 1, message);
+        revert IWatchtowerCustomErrors.PollTryAtBlock(
+            block.number + 1,
+            message
+        );
     }
 
     /**
@@ -435,7 +510,9 @@ contract ConstantProduct is IERC1271 {
             if (committedOrderHash != EMPTY_COMMITMENT) {
                 revert OrderDoesNotMatchCommitmentHash();
             }
-            GPv2Order.Data memory computedOrder = getTradeableOrder(tradingParams);
+            GPv2Order.Data memory computedOrder = getTradeableOrder(
+                tradingParams
+            );
             if (!matchFreeOrderParams(order, computedOrder)) {
                 revert OrderDoesNotMatchDefaultTradeableOrder();
             }
@@ -449,7 +526,9 @@ contract ConstantProduct is IERC1271 {
      * @return The hash of the input parameter, intended to be used as a unique
      * identifier
      */
-    function hash(TradingParams memory tradingParams) public pure returns (bytes32) {
+    function hash(
+        TradingParams memory tradingParams
+    ) public pure returns (bytes32) {
         return keccak256(abi.encode(tradingParams));
     }
 
@@ -461,14 +540,18 @@ contract ConstantProduct is IERC1271 {
      * @param rhs another CoW Swap order
      * @return true if the order parameters match, false otherwise
      */
-    function matchFreeOrderParams(GPv2Order.Data memory lhs, GPv2Order.Data memory rhs) internal pure returns (bool) {
+    function matchFreeOrderParams(
+        GPv2Order.Data memory lhs,
+        GPv2Order.Data memory rhs
+    ) internal pure returns (bool) {
         bool sameSellToken = lhs.sellToken == rhs.sellToken;
         bool sameBuyToken = lhs.buyToken == rhs.buyToken;
         bool sameSellAmount = lhs.sellAmount == rhs.sellAmount;
         bool sameBuyAmount = lhs.buyAmount == rhs.buyAmount;
         bool sameValidTo = lhs.validTo == rhs.validTo;
         bool sameKind = lhs.kind == rhs.kind;
-        bool samePartiallyFillable = lhs.partiallyFillable == rhs.partiallyFillable;
+        bool samePartiallyFillable = lhs.partiallyFillable ==
+            rhs.partiallyFillable;
 
         // The following parameters are untested:
         // - receiver
@@ -477,7 +560,13 @@ contract ConstantProduct is IERC1271 {
         // - sellTokenBalance
         // - buyTokenBalance
 
-        return sameSellToken && sameBuyToken && sameSellAmount && sameBuyAmount && sameValidTo && sameKind
-            && samePartiallyFillable;
+        return
+            sameSellToken &&
+            sameBuyToken &&
+            sameSellAmount &&
+            sameBuyAmount &&
+            sameValidTo &&
+            sameKind &&
+            samePartiallyFillable;
     }
 }
