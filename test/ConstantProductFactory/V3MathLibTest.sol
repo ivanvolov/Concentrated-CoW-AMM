@@ -133,6 +133,22 @@ contract V3MathLibTest is ConstantProductFactoryTestHarness {
         assertGe(amount1Provided, amount1Swap);
     }
 
+    function test_uniswapV3_math_swap_sqrt_price() public {
+        (liquidity, amount0Provided, amount1Provided) = provideLiquidity(lp);
+
+        uint160 newSqrtPriceX96 = V3MathLib.getSqrtPriceFromPrice(4565 ether);
+
+        (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
+            .getAmountsFromSqrtPrice(
+                newSqrtPriceX96,
+                V3MathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                liquidity
+            );
+
+        assertEq(amount0Swap, 1000512716629909196);
+        assertEq(amount1Swap, 4779728434348080898402);
+    }
+
     // Helpers
 
     function provideLiquidity(

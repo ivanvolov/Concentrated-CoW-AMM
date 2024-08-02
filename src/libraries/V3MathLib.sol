@@ -4,12 +4,32 @@ pragma solidity ^0.8.25;
 import "forge-std/console.sol";
 
 import {TickMath} from "@v4-core/libraries/TickMath.sol";
+// import {TickMath as V3TickMath} from "@forks/uniswap-v3/TickMath.sol";
 import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
 import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
 import {FixedPointMathLib} from "@src/libraries/math/FixedPointMathLib.sol";
 
 library V3MathLib {
     using FixedPointMathLib for uint256;
+
+    function getAmountsFromSqrtPrice(
+        uint160 sqrtPriceNextX96,
+        uint160 sqrtPriceCurrentX96,
+        uint128 liquidity
+    ) internal pure returns (uint256, uint256) {
+        return (
+            LiquidityAmounts.getAmount0ForLiquidity(
+                sqrtPriceNextX96,
+                sqrtPriceCurrentX96,
+                liquidity
+            ),
+            LiquidityAmounts.getAmount1ForLiquidity(
+                sqrtPriceNextX96,
+                sqrtPriceCurrentX96,
+                liquidity
+            )
+        );
+    }
 
     function getSwapAmountsFromAmount0(
         uint160 sqrtPriceCurrentX96,
@@ -130,9 +150,19 @@ library V3MathLib {
 
     function getSqrtPriceFromPrice(
         uint256 price
-    ) internal view returns (uint160) {
+    ) internal pure returns (uint160) {
         return getSqrtPriceAtTick(V3MathLib.getTickFromPrice(price));
     }
+
+    // function getPriceFromSqrtPrice(
+    //     uint160 sqrtPriceX96
+    // ) internal view returns (uint160) {
+    //     console.logInt(TickMath.getTickAtSqrtPrice(sqrtPriceX96));
+    //     return
+    //         V3TickMath.getSqrtRatioAtTick(
+    //             TickMath.getTickAtSqrtPrice(sqrtPriceX96)
+    //         );
+    // }
 
     function getSqrtPriceAtTick(int24 tick) internal pure returns (uint160) {
         return TickMath.getSqrtPriceAtTick(tick);
