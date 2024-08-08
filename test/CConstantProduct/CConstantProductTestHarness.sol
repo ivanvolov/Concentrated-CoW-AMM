@@ -6,8 +6,9 @@ import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.
 import {CConstantProduct, GPv2Order, IERC20} from "src/CConstantProduct.sol";
 import {UniswapV3PriceOracle} from "src/oracles/UniswapV3PriceOracle.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
+import {V3MathLib} from "src/libraries/V3MathLib.sol";
 
-abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
+abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     using GPv2Order for GPv2Order.Data;
 
     struct SignatureData {
@@ -28,25 +29,31 @@ abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
     bytes32 private DEFAULT_DOMAIN_SEPARATOR =
         keccak256(bytes("domain separator hash"));
 
+    address private DEFAULT_POOL_ADDRESS =
+        makeAddr("default USDC/WETH pool address");
+    uint160 DEFAULT_SQRT_PRICE_CURRENT_X96 = uint160(1); //TODO: change it;
+    uint160 DEFAULT_SQRT_PRICE_AX96 = uint160(1); //TODO: change it;
+    uint160 DEFAULT_SQRT_PRICE_BX96 = uint160(1); //TODO: change it;
+
     ISettlement internal solutionSettler =
         ISettlement(DEFAULT_SOLUTION_SETTLER);
-    cConstantProduct internal cConstantProduct;
-    UniswapV3PriceOracle internal uniswapV3PriceOracle;
+    CConstantProduct internal constantProduct;
+    UniswapV3PriceOracle internal uniswapV2PriceOracle;
 
     function setUp() public virtual override(BaseComposableCoWTest) {
         super.setUp();
-        address cConstantProductAddress = vm.computeCreateAddress(
+        address constantProductAddress = vm.computeCreateAddress(
             address(this),
             vm.getNonce(address(this))
         );
         setUpSolutionSettler();
-        setUpAmmDeployment(cConstantProductAddress);
-        cConstantProduct = new cConstantProduct(
+        setUpAmmDeployment(constantProductAddress);
+        constantProduct = new CConstantProduct(
             solutionSettler,
             IERC20(USDC),
             IERC20(WETH)
         );
-        uniswapV2PriceOracle = new UniswapV2PriceOracle();
+        uniswapV2PriceOracle = new UniswapV3PriceOracle();
     }
 
     function setUpSolutionSettler() internal {
@@ -77,13 +84,14 @@ abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
         returns (CConstantProduct.TradingParams memory)
     {
         return
-            cConstantProduct.TradingParams(
+            CConstantProduct.TradingParams(
                 0,
                 uniswapV2PriceOracle,
-                abi.encode(
-                    UniswapV2PriceOracle.Data(IUniswapV2Pair(DEFAULT_PAIR))
-                ),
-                DEFAULT_APPDATA
+                abi.encode(DEFAULT_POOL_ADDRESS),
+                DEFAULT_APPDATA,
+                DEFAULT_SQRT_PRICE_CURRENT_X96,
+                DEFAULT_SQRT_PRICE_AX96,
+                DEFAULT_SQRT_PRICE_BX96
             );
     }
 
@@ -97,7 +105,7 @@ abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
 
     function setUpDefaultCommitment() internal {
         vm.prank(address(solutionSettler));
-        cConstantProduct.commit(DEFAULT_COMMITMENT);
+        constantProduct.commit(DEFAULT_COMMITMENT);
     }
 
     function setUpDefaultReserves(address owner) internal {
@@ -109,20 +117,24 @@ abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
         uint256 amount0,
         uint256 amount1
     ) internal {
-        cConstantProduct.TradingParams
+        CConstantProduct.TradingParams
             memory defaultTradingParams = setUpDefaultTradingParams();
-        UniswapV2PriceOracle.Data memory oracleData = abi.decode(
+        UniswapV3PriceOracle.Data memory oracleData = abi.decode(
             defaultTradingParams.priceOracleData,
-            (UniswapV2PriceOracle.Data)
+            (UniswapV3PriceOracle.Data)
+        );
+
+        (address _token0, address _token1) = V3MathLib.getTokensFromPool(
+            address(oracleData.pool)
         );
 
         vm.mockCall(
-            oracleData.referencePair.token0(),
+            _token0,
             abi.encodeCall(IERC20.balanceOf, (owner)),
             abi.encode(amount0)
         );
         vm.mockCall(
-            oracleData.referencePair.token1(),
+            _token1,
             abi.encodeCall(IERC20.balanceOf, (owner)),
             abi.encode(amount1)
         );
@@ -132,12 +144,7 @@ abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
         uint256 amount0,
         uint256 amount1
     ) public {
-        uint32 unusedTimestamp = 31337;
-        vm.mockCall(
-            address(DEFAULT_PAIR),
-            abi.encodeCall(IUniswapV2Pair.getReserves, ()),
-            abi.encode(amount0, amount1, unusedTimestamp)
-        );
+        //TODO: do it for e2e only
     }
 
     function defaultSignatureAndHashes()
@@ -145,7 +152,7 @@ abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
         view
         returns (SignatureData memory out)
     {
-        cConstantProduct.TradingParams
+        CConstantProduct.TradingParams
             memory tradingParams = getDefaultTradingParams();
         GPv2Order.Data memory order = getDefaultOrder();
         bytes32 orderHash = order.hash(solutionSettler.domainSeparator());
@@ -158,12 +165,12 @@ abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
     function checkedGetTradeableOrder(
         CConstantProduct.TradingParams memory tradingParams
     ) internal view returns (GPv2Order.Data memory order) {
-        order = cConstantProduct.getTradeableOrder(tradingParams);
-        cConstantProduct.verify(tradingParams, order);
+        order = constantProduct.getTradeableOrder(tradingParams);
+        constantProduct.verify(tradingParams, order);
     }
 
     function getDefaultOrder() internal view returns (GPv2Order.Data memory) {
-        cConstantProduct.TradingParams
+        CConstantProduct.TradingParams
             memory tradingParams = getDefaultTradingParams();
 
         return
@@ -174,7 +181,7 @@ abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
                 0, // uint256 sellAmount;
                 0, // uint256 buyAmount;
                 uint32(block.timestamp) +
-                    cConstantProduct.MAX_ORDER_DURATION() /
+                    constantProduct.MAX_ORDER_DURATION() /
                     2, // uint32 validTo;
                 tradingParams.appData, // bytes32 appData;
                 0, // uint256 feeAmount;
@@ -185,30 +192,30 @@ abstract contract cConstantProductTestHarness is BaseComposableCoWTest {
             );
     }
 
-    function setUpAmmDeployment(address cConstantProductAddress) internal {
+    function setUpAmmDeployment(address constantProductAddress) internal {
         setUpTokenForDeployment(
             IERC20(USDC),
-            cConstantProductAddress,
+            constantProductAddress,
             address(this)
         );
         setUpTokenForDeployment(
             IERC20(WETH),
-            cConstantProductAddress,
+            constantProductAddress,
             address(this)
         );
     }
 
     function setUpTokenForDeployment(
         IERC20 token,
-        address cConstantProductAddress,
+        address constantProductAddress,
         address owner
     ) internal {
         mockSafeApprove(
             token,
-            cConstantProductAddress,
+            constantProductAddress,
             solutionSettler.vaultRelayer()
         );
-        mockSafeApprove(token, cConstantProductAddress, owner);
+        mockSafeApprove(token, constantProductAddress, owner);
     }
 
     function mockSafeApprove(

@@ -8,9 +8,16 @@ import {TickMath} from "@v4-core/libraries/TickMath.sol";
 import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
 import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
 import {FixedPointMathLib} from "@src/libraries/math/FixedPointMathLib.sol";
+import {IUniswapV3Pool} from "@forks/uniswap-v3/IUniswapV3Pool.sol";
 
 library V3MathLib {
     using FixedPointMathLib for uint256;
+
+    function getTokensFromPool(
+        address pool
+    ) external view returns (address token0, address token1) {
+        return (IUniswapV3Pool(pool).token0(), IUniswapV3Pool(pool).token1());
+    }
 
     function getAmountsFromSqrtPrice(
         uint160 sqrtPriceNextX96,

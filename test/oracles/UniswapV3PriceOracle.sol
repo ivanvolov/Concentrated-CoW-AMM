@@ -40,9 +40,9 @@ contract UniswapV3PriceOracleTest is Test {
     // function getDefaultOracleData()
     //     internal
     //     view
-    //     returns (UniswapV2PriceOracle.Data memory data)
+    //     returns (UniswapV3PriceOracle.Data memory data)
     // {
-    //     data = UniswapV2PriceOracle.Data(pair);
+    //     data = UniswapV3PriceOracle.Data(pair);
     // }
 
     // function testReturnsExpectedPrice() public {
