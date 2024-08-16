@@ -14,7 +14,6 @@ abstract contract DisableTrading is CConstantProductFactoryTestHarness {
     //         constantProductFactory.owner(amm) != notTheOwner,
     //         "bad test setup"
     //     );
-
     //     vm.expectRevert(
     //         abi.encodeWithSelector(
     //             CConstantProductFactory.OnlyOwnerCanCall.selector,
@@ -24,49 +23,43 @@ abstract contract DisableTrading is CConstantProductFactoryTestHarness {
     //     vm.prank(notTheOwner);
     //     constantProductFactory.disableTrading(amm);
     // }
-
     // function testResetsTradingParamsHash() public {
     //     CConstantProduct amm = setupAndCreateAMM();
-
     //     constantProductFactory.disableTrading(amm);
     //     assertEq(amm.tradingParamsHash(), amm.NO_TRADING());
     // }
-
     // function testDisableTradingEmitsExpectedEvents() public {
     //     CConstantProduct amm = setupAndCreateAMM();
-
     //     vm.expectEmit();
     //     emit CConstantProductFactory.TradingDisabled(amm);
     //     constantProductFactory.disableTrading(amm);
     // }
-
-    function setupAndCreateAMM() private returns (CConstantProduct) {
-        uint256 amount0 = 1234;
-        uint256 amount1 = 5678;
-        uint256 minTradedToken0 = 42;
-        ICPriceOracle priceOracle = ICPriceOracle(
-            makeAddr("DisableTrading: price oracle")
-        );
-        bytes memory priceOracleData = bytes("some price oracle data");
-        bytes32 appData = keccak256("DisableTrading: app data");
-
-        mocksForTokenCreation(
-            constantProductFactory.ammDeterministicAddress(
-                address(this),
-                mockableToken0,
-                mockableToken1
-            )
-        );
-        return
-            constantProductFactory.create(
-                mockableToken0,
-                amount0,
-                mockableToken1,
-                amount1,
-                minTradedToken0,
-                priceOracle,
-                priceOracleData,
-                appData
-            );
-    }
+    // function setupAndCreateAMM() private returns (CConstantProduct) {
+    //     uint256 amount0 = 1234;
+    //     uint256 amount1 = 5678;
+    //     uint256 minTradedToken0 = 42;
+    //     ICPriceOracle priceOracle = ICPriceOracle(
+    //         makeAddr("DisableTrading: price oracle")
+    //     );
+    //     bytes memory priceOracleData = bytes("some price oracle data");
+    //     bytes32 appData = keccak256("DisableTrading: app data");
+    //     mocksForTokenCreation(
+    //         constantProductFactory.ammDeterministicAddress(
+    //             address(this),
+    //             mockableToken0,
+    //             mockableToken1
+    //         )
+    //     );
+    //     return
+    //         constantProductFactory.create(
+    //             mockableToken0,
+    //             amount0,
+    //             mockableToken1,
+    //             amount1,
+    //             minTradedToken0,
+    //             priceOracle,
+    //             priceOracleData,
+    //             appData
+    //         );
+    // }
 }

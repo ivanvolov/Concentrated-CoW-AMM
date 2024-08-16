@@ -5,6 +5,7 @@ import {ComposableCoW, IConditionalOrder} from "lib/composable-cow/src/Composabl
 import {SafeERC20} from "lib/openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {CConstantProduct, IERC20, OZIERC20, ISettlement, GPv2Order, ICPriceOracle} from "./CConstantProduct.sol";
+import {V3MathLib} from "./libraries/V3MathLib.sol";
 
 /**
  * @title CoW AMM Factory
@@ -73,9 +74,7 @@ contract CConstantProductFactory {
     /**
      * @notice Creates a new CoW AMM with the specified imput parameters.
      * @param token0 The address of the first token in the pair.
-     * @param amount0 The initial amount of the first token in the pair.
      * @param token1 The address of the second token in the pair.
-     * @param amount1 The initial amount of the second token in the pair.
      * @param minTradedToken0 The minimum amount of token0 before the AMM
      * attempts auto-rebalance.
      * @param priceOracle The address of the price oracle to use for the AMM.
@@ -85,31 +84,76 @@ contract CConstantProductFactory {
      */
     function create(
         IERC20 token0,
-        uint256 amount0,
         IERC20 token1,
-        uint256 amount1,
+        uint128 liquidity,
         uint256 minTradedToken0,
         ICPriceOracle priceOracle,
         bytes calldata priceOracleData,
-        bytes32 appData
+        bytes32 appData,
+        uint160 sqrtPriceAX96,
+        uint160 sqrtPriceBX96
     ) external returns (CConstantProduct amm) {
-        // address ammOwner = msg.sender;
-        // amm = new CConstantProduct{salt: salt(ammOwner)}(
-        //     settler,
-        //     token0,
-        //     token1
-        // );
-        // emit Deployed(amm, ammOwner, token0, token1);
-        // owner[amm] = ammOwner;
-        // deposit(amm, amount0, amount1);
-        // CConstantProduct.TradingParams memory data = CConstantProduct
-        //     .TradingParams({
-        //         minTradedToken0: minTradedToken0,
-        //         priceOracle: priceOracle,
-        //         priceOracleData: priceOracleData,
-        //         appData: appData
-        //     });
-        // _enableTrading(amm, data);
+        address ammOwner = msg.sender;
+        amm = new CConstantProduct{salt: salt(ammOwner)}(
+            settler,
+            token0,
+            token1
+        );
+        emit Deployed(amm, ammOwner, token0, token1);
+        owner[amm] = ammOwner;
+
+        _enableTrading(
+            amm,
+            getDataAndDeposit(
+                amm,
+                liquidity,
+                minTradedToken0,
+                priceOracle,
+                priceOracleData,
+                appData,
+                sqrtPriceAX96,
+                sqrtPriceBX96
+            )
+        );
+    }
+
+    //TODO: optimize this and do it less ugly
+    /**
+     * @notice This function is mainly to remove stack to deep errors.
+     */
+    function getDataAndDeposit(
+        CConstantProduct amm,
+        uint128 liquidity,
+        uint256 minTradedToken0,
+        ICPriceOracle priceOracle,
+        bytes calldata priceOracleData,
+        bytes32 appData,
+        uint160 sqrtPriceAX96,
+        uint160 sqrtPriceBX96
+    ) internal returns (CConstantProduct.TradingParams memory data) {
+        uint160 currentSqrtPriceX96 = priceOracle.getSqrtPriceX96(
+            address(amm.token0()),
+            address(amm.token1()),
+            priceOracleData
+        );
+        (uint256 amount0, uint256 amount1) = V3MathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
+                currentSqrtPriceX96,
+                sqrtPriceAX96,
+                sqrtPriceBX96,
+                liquidity
+            );
+        deposit(amm, amount0, amount1);
+        return
+            CConstantProduct.TradingParams({
+                minTradedToken0: minTradedToken0,
+                priceOracle: priceOracle,
+                priceOracleData: priceOracleData,
+                appData: appData,
+                sqrtPriceCurrentX96: currentSqrtPriceX96,
+                sqrtPriceAX96: sqrtPriceAX96,
+                sqrtPriceBX96: sqrtPriceBX96
+            });
     }
 
     /**
@@ -128,17 +172,23 @@ contract CConstantProductFactory {
         uint256 minTradedToken0,
         ICPriceOracle priceOracle,
         bytes calldata priceOracleData,
-        bytes32 appData
+        bytes32 appData,
+        uint160 sqrtPriceCurrentX96,
+        uint160 sqrtPriceAX96,
+        uint160 sqrtPriceBX96
     ) external onlyOwner(amm) {
-        // CConstantProduct.TradingParams memory data = CConstantProduct
-        //     .TradingParams({
-        //         minTradedToken0: minTradedToken0,
-        //         priceOracle: priceOracle,
-        //         priceOracleData: priceOracleData,
-        //         appData: appData
-        //     });
-        // _disableTrading(amm);
-        // _enableTrading(amm, data);
+        CConstantProduct.TradingParams memory data = CConstantProduct
+            .TradingParams({
+                minTradedToken0: minTradedToken0,
+                priceOracle: priceOracle,
+                priceOracleData: priceOracleData,
+                appData: appData,
+                sqrtPriceCurrentX96: sqrtPriceCurrentX96,
+                sqrtPriceAX96: sqrtPriceAX96,
+                sqrtPriceBX96: sqrtPriceBX96
+            });
+        _disableTrading(amm);
+        _enableTrading(amm, data);
     }
 
     /**
