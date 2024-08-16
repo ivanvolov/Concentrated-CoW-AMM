@@ -380,8 +380,6 @@ contract CConstantProduct is IERC1271 {
             }
             (sellToken, buyToken) = (buyToken, sellToken);
         }
-        uint256 sellReserve = sellToken.balanceOf(address(this));
-        uint256 buyReserve = buyToken.balanceOf(address(this));
 
         if (order.buyToken != buyToken) {
             revert IConditionalOrder.OrderNotValid("invalid buy token");
@@ -423,6 +421,12 @@ contract CConstantProduct is IERC1271 {
         (uint256 sellAmount, uint256 buyAmount, , ) = getTargetAmounts(
             tradingParams
         );
+
+        // console.log("> sellAmount", sellAmount);
+        // console.log("> buyAmount", buyAmount);
+
+        // console.log("> order.sellAmount", order.sellAmount);
+        // console.log("> order.buyAmount", order.buyAmount);
 
         if (!(order.sellAmount <= sellAmount && order.buyAmount >= buyAmount)) {
             revert IConditionalOrder.OrderNotValid("received amount too low");

@@ -20,11 +20,7 @@ abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
         assertEq(oReserve0, 998995580131581599);
         assertEq(oReserve1, 4999999999999999999998);
 
-        setUpDefaultWithReserves(
-            address(constantProduct),
-            oReserve0,
-            oReserve1
-        );
+        setUpReserves(address(constantProduct), oReserve0, oReserve1);
 
         setUpDefaultOracleResponse();
         GPv2Order.Data memory order = checkedGetTradeableOrder(
@@ -50,11 +46,7 @@ abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
         assertEq(oReserve0, 998995580131581599);
         assertEq(oReserve1, 4999999999999999999998);
 
-        setUpDefaultWithReserves(
-            address(constantProduct),
-            oReserve0,
-            oReserve1
-        );
+        setUpReserves(address(constantProduct), oReserve0, oReserve1);
 
         setUpOracleResponse(DEFAULT_NEW_PRICE_OTHER_SIDE_X96);
         GPv2Order.Data memory order = checkedGetTradeableOrder(

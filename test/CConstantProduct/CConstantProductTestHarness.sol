@@ -143,10 +143,10 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             uint256 ownerReserve0,
             uint256 ownerReserve1
         ) = calculateProvideLiquidity(defaultLpFixture);
-        setUpDefaultWithReserves(owner, ownerReserve0, ownerReserve1);
+        setUpReserves(owner, ownerReserve0, ownerReserve1);
     }
 
-    function setUpDefaultWithReserves(
+    function setUpReserves(
         address owner,
         uint256 amount0,
         uint256 amount1
@@ -185,7 +185,6 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
 
     function defaultSignatureAndHashes()
         internal
-        view
         returns (SignatureData memory out)
     {
         CConstantProduct.TradingParams
@@ -215,15 +214,15 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
                 IERC20(USDC), // IERC20 sellToken;
                 IERC20(WETH), // IERC20 buyToken;
                 GPv2Order.RECEIVER_SAME_AS_OWNER, // address receiver;
-                0, // uint256 sellAmount;
-                0, // uint256 buyAmount;
+                4779728434348080898426, // uint256 sellAmount;
+                1000512716629909196, // uint256 buyAmount;
                 uint32(block.timestamp) +
                     constantProduct.MAX_ORDER_DURATION() /
                     2, // uint32 validTo;
                 tradingParams.appData, // bytes32 appData;
                 0, // uint256 feeAmount;
                 GPv2Order.KIND_SELL, // bytes32 kind;
-                true, // bool partiallyFillable;
+                false, // bool partiallyFillable;
                 GPv2Order.BALANCE_ERC20, // bytes32 sellTokenBalance;
                 GPv2Order.BALANCE_ERC20 // bytes32 buyTokenBalance;
             );
