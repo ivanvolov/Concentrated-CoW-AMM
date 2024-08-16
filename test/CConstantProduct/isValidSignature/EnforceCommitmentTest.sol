@@ -28,7 +28,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
 
     // function testTradeableOrderPassesValidationWithZeroCommit() public {
     //     setUpDefaultPair();
-    //     setUpDefaultReferencePairReserves(42, 1337);
+    //     setUpDefaultOracleResponse(42, 1337);
     //     setUpDefaultReserves(address(constantProduct));
 
     //     require(
@@ -50,7 +50,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
 
     // function testZeroCommitRevertsForOrdersOtherThanTradeableOrder() public {
     //     setUpDefaultPair();
-    //     setUpDefaultReferencePairReserves(42, 1337);
+    //     setUpDefaultOracleResponse(42, 1337);
     //     setUpDefaultReserves(address(constantProduct));
 
     //     require(

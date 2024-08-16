@@ -43,7 +43,7 @@ abstract contract GetTradeableOrderWithSignature is
     //     CConstantProduct.TradingParams
     //         memory tradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
-    //     setUpDefaultReferencePairReserves(42, 1337);
+    //     setUpDefaultOracleResponse(42, 1337);
     //     constantProduct.enableTrading(tradingParams);
 
     //     bytes32 hashEnabledParams = constantProduct.hash(tradingParams);
@@ -70,7 +70,7 @@ abstract contract GetTradeableOrderWithSignature is
     //     CConstantProduct.TradingParams
     //         memory tradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
-    //     setUpDefaultReferencePairReserves(42, 1337);
+    //     setUpDefaultOracleResponse(42, 1337);
     //     constantProduct.enableTrading(tradingParams);
 
     //     GPv2Order.Data memory order = checkedGetTradeableOrder(tradingParams);
@@ -88,7 +88,7 @@ abstract contract GetTradeableOrderWithSignature is
     //     CConstantProduct.TradingParams
     //         memory tradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
-    //     setUpDefaultReferencePairReserves(42, 1337);
+    //     setUpDefaultOracleResponse(42, 1337);
     //     constantProduct.enableTrading(tradingParams);
 
     //     (

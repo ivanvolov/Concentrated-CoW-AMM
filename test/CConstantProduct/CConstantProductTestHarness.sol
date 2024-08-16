@@ -49,7 +49,9 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     uint256 DEFAULT_PRICE_UPPER = 5500 ether;
     uint256 DEFAULT_PRICE_LOWER = 4545 ether;
 
-    uint256 DEFAULT_NEW_PRICE = 4565 ether;
+    uint160 DEFAULT_NEW_PRICE_X96 = V3MathLib.getSqrtPriceFromPrice(4565 ether);
+    uint160 DEFAULT_NEW_PRICE_OTHER_SIDE_X96 =
+        V3MathLib.getSqrtPriceFromPrice(5499 ether);
 
     ISettlement internal solutionSettler =
         ISettlement(DEFAULT_SOLUTION_SETTLER);
@@ -162,7 +164,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     }
 
     function setUpDefaultOracleResponse() public {
-        setUpOracleResponse(V3MathLib.getSqrtPriceFromPrice(DEFAULT_NEW_PRICE));
+        setUpOracleResponse(DEFAULT_NEW_PRICE_X96);
     }
 
     function setUpOracleResponse(uint160 newSqrtPriceX96) public {
