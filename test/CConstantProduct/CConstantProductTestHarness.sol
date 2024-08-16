@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
+import "forge-std/console.sol";
+
 import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.t.sol";
 
 import {CConstantProduct, GPv2Order, IERC20} from "src/CConstantProduct.sol";
 import {UniswapV3PriceOracle} from "src/oracles/UniswapV3PriceOracle.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
 import {V3MathLib} from "src/libraries/V3MathLib.sol";
+
+import {ICPriceOracle} from "src/interfaces/ICPriceOracle.sol";
 
 abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     using GPv2Order for GPv2Order.Data;
@@ -16,6 +20,14 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         bytes32 orderHash;
         CConstantProduct.TradingParams tradingParams;
         bytes signature;
+    }
+
+    struct LPFixture {
+        uint256 currentPrice;
+        uint256 priceUpper;
+        uint256 priceLower;
+        uint256 amount0;
+        uint256 amount1;
     }
 
     address internal vaultRelayer = makeAddr("vault relayer");
@@ -31,17 +43,31 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
 
     address private DEFAULT_POOL_ADDRESS =
         makeAddr("default USDC/WETH pool address");
-    uint160 DEFAULT_SQRT_PRICE_CURRENT_X96 = uint160(1); //TODO: change it;
-    uint160 DEFAULT_SQRT_PRICE_AX96 = uint160(1); //TODO: change it;
-    uint160 DEFAULT_SQRT_PRICE_BX96 = uint160(1); //TODO: change it;
+
+    uint32 DEFAULT_SECONDS_AGO = 1;
+    uint256 DEFAULT_PRICE_CURRENT = 5000 ether;
+    uint256 DEFAULT_PRICE_UPPER = 5500 ether;
+    uint256 DEFAULT_PRICE_LOWER = 4545 ether;
+
+    uint256 DEFAULT_NEW_PRICE = 4565 ether;
 
     ISettlement internal solutionSettler =
         ISettlement(DEFAULT_SOLUTION_SETTLER);
     CConstantProduct internal constantProduct;
-    UniswapV3PriceOracle internal uniswapV2PriceOracle;
+    UniswapV3PriceOracle internal uniswapV3PriceOracle;
+
+    LPFixture defaultLpFixture;
 
     function setUp() public virtual override(BaseComposableCoWTest) {
         super.setUp();
+
+        defaultLpFixture = LPFixture({
+            currentPrice: 5000 ether,
+            priceLower: 4545 ether,
+            priceUpper: 5500 ether,
+            amount0: 1 ether,
+            amount1: 5000 ether
+        });
         address constantProductAddress = vm.computeCreateAddress(
             address(this),
             vm.getNonce(address(this))
@@ -53,7 +79,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             IERC20(USDC),
             IERC20(WETH)
         );
-        uniswapV2PriceOracle = new UniswapV3PriceOracle();
+        uniswapV3PriceOracle = new UniswapV3PriceOracle();
     }
 
     function setUpSolutionSettler() internal {
@@ -75,7 +101,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     }
 
     function setUpDefaultPair() internal {
-        //TODO: set up token0 and token1 for the pool to check in oracle
+        //TODO: later
     }
 
     function getDefaultTradingParams()
@@ -86,12 +112,12 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         return
             CConstantProduct.TradingParams(
                 0,
-                uniswapV2PriceOracle,
-                abi.encode(DEFAULT_POOL_ADDRESS),
+                uniswapV3PriceOracle,
+                abi.encode(DEFAULT_POOL_ADDRESS, DEFAULT_SECONDS_AGO),
                 DEFAULT_APPDATA,
-                DEFAULT_SQRT_PRICE_CURRENT_X96,
-                DEFAULT_SQRT_PRICE_AX96,
-                DEFAULT_SQRT_PRICE_BX96
+                V3MathLib.getSqrtPriceFromPrice(defaultLpFixture.currentPrice),
+                V3MathLib.getSqrtPriceFromPrice(defaultLpFixture.priceLower),
+                V3MathLib.getSqrtPriceFromPrice(defaultLpFixture.priceUpper)
             );
     }
 
@@ -109,7 +135,12 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     }
 
     function setUpDefaultReserves(address owner) internal {
-        setUpDefaultWithReserves(owner, 1337, 1337);
+        (
+            ,
+            uint256 ownerReserve0,
+            uint256 ownerReserve1
+        ) = calculateProvideLiquidity(defaultLpFixture);
+        setUpDefaultWithReserves(owner, ownerReserve0, ownerReserve1);
     }
 
     function setUpDefaultWithReserves(
@@ -117,34 +148,36 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         uint256 amount0,
         uint256 amount1
     ) internal {
-        CConstantProduct.TradingParams
-            memory defaultTradingParams = setUpDefaultTradingParams();
-        UniswapV3PriceOracle.Data memory oracleData = abi.decode(
-            defaultTradingParams.priceOracleData,
-            (UniswapV3PriceOracle.Data)
-        );
-
-        (address _token0, address _token1) = V3MathLib.getTokensFromPool(
-            address(oracleData.pool)
-        );
-
+        //TODO: maybe rewrite this to Oracle token0 and token1
         vm.mockCall(
-            _token0,
+            address(constantProduct.token0()),
             abi.encodeCall(IERC20.balanceOf, (owner)),
             abi.encode(amount0)
         );
         vm.mockCall(
-            _token1,
+            address(constantProduct.token1()),
             abi.encodeCall(IERC20.balanceOf, (owner)),
             abi.encode(amount1)
         );
     }
 
-    function setUpDefaultReferencePairReserves(
-        uint256 amount0,
-        uint256 amount1
-    ) public {
-        //TODO: do it for e2e only
+    function setUpDefaultOracleResponse() public {
+        setUpOracleResponse(V3MathLib.getSqrtPriceFromPrice(DEFAULT_NEW_PRICE));
+    }
+
+    function setUpOracleResponse(uint160 newSqrtPriceX96) public {
+        vm.mockCall(
+            address(uniswapV3PriceOracle),
+            abi.encodeCall(
+                ICPriceOracle.getSqrtPriceX96,
+                (
+                    address(constantProduct.token0()),
+                    address(constantProduct.token1()),
+                    abi.encode(DEFAULT_POOL_ADDRESS, DEFAULT_SECONDS_AGO)
+                )
+            ),
+            abi.encode(newSqrtPriceX96)
+        );
     }
 
     function defaultSignatureAndHashes()
@@ -166,6 +199,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         CConstantProduct.TradingParams memory tradingParams
     ) internal view returns (GPv2Order.Data memory order) {
         order = constantProduct.getTradeableOrder(tradingParams);
+        console.log("> order", order.sellAmount);
         constantProduct.verify(tradingParams, order);
     }
 
@@ -245,5 +279,26 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             abi.encodeCall(IERC20.allowance, (owner, spender)),
             abi.encode(0)
         );
+    }
+
+    function calculateProvideLiquidity(
+        LPFixture memory lpFixture
+    ) internal pure returns (uint128, uint256, uint256) {
+        uint128 _liquidity = V3MathLib.getLiquidityFromAmountsPrice(
+            lpFixture.currentPrice,
+            lpFixture.priceLower,
+            lpFixture.priceUpper,
+            lpFixture.amount0,
+            lpFixture.amount1
+        );
+
+        (uint256 _amount0, uint256 _amount1) = V3MathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
+                V3MathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
+                V3MathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
+                V3MathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
+                _liquidity
+            );
+        return (_liquidity, _amount0, _amount1);
     }
 }

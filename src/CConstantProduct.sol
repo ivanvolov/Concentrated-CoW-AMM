@@ -265,6 +265,44 @@ contract CConstantProduct is IERC1271 {
     function getTradeableOrder(
         TradingParams memory tradingParams
     ) public view returns (GPv2Order.Data memory order) {
+        (
+            uint256 sellAmount,
+            uint256 buyAmount,
+            IERC20 sellToken,
+            IERC20 buyToken
+        ) = getTargetAmounts(tradingParams);
+
+        uint256 tradedAmountToken0 = sellToken == token0
+            ? sellAmount
+            : buyAmount;
+
+        if (tradedAmountToken0 < tradingParams.minTradedToken0) {
+            revertPollAtNextBlock("traded amount too small");
+        }
+
+        console.log("> sellAmount", sellAmount);
+        console.log("> buyAmount", buyAmount);
+
+        order = GPv2Order.Data(
+            sellToken,
+            buyToken,
+            GPv2Order.RECEIVER_SAME_AS_OWNER,
+            sellAmount,
+            buyAmount,
+            Utils.validToBucket(MAX_ORDER_DURATION),
+            tradingParams.appData,
+            0,
+            GPv2Order.KIND_SELL,
+            false,
+            GPv2Order.BALANCE_ERC20,
+            GPv2Order.BALANCE_ERC20
+        );
+    }
+
+    //TODO: maybe remove current price if not needed
+    function getTargetAmounts(
+        TradingParams memory tradingParams
+    ) private view returns (uint256, uint256, IERC20, IERC20) {
         uint160 targetSqrtPriceX96 = tradingParams.priceOracle.getSqrtPriceX96(
             address(token0),
             address(token1),
@@ -274,51 +312,53 @@ contract CConstantProduct is IERC1271 {
             token0.balanceOf(address(this)),
             token1.balanceOf(address(this))
         );
-
-        IERC20 sellToken;
-        IERC20 buyToken;
-        uint256 sellAmount;
-        uint256 buyAmount;
+        // console.log("> selfReserve0", selfReserve0);
+        // console.log("> selfReserve1", selfReserve1);
 
         uint160 _sqrtPriceCurrentX96 = sqrtPriceCurrentX96 != 0
             ? sqrtPriceCurrentX96
             : tradingParams.sqrtPriceCurrentX96;
 
-        uint128 liquidity = V3MathLib.getLiquidityForAmounts(
+        uint128 liquidity = V3MathLib.getLiquidityFromAmountsSqrtPriceX96(
             _sqrtPriceCurrentX96,
             tradingParams.sqrtPriceAX96,
             tradingParams.sqrtPriceBX96,
             selfReserve0,
             selfReserve1
         );
-        (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
-            .getAmountsFromSqrtPrice(
+        console.log("> liquidity", liquidity);
+        // console.log("> targetSqrtPriceX96", targetSqrtPriceX96);
+        // console.log("> sqrtPriceCurrentX96", _sqrtPriceCurrentX96);
+
+        (uint256 newAmount0, uint256 newAmount1) = V3MathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
                 targetSqrtPriceX96,
-                _sqrtPriceCurrentX96,
+                tradingParams.sqrtPriceAX96,
+                tradingParams.sqrtPriceBX96,
                 liquidity
             );
+        console.log("> newAmount0", newAmount0);
+        console.log("> newAmount1", newAmount1);
 
-        // Note: remember that V3 tokens are always ordered, so does it's oracles. So we could simplify here.
-        // TODO: I don't get the order of swap amounts here...
+        if (targetSqrtPriceX96 > _sqrtPriceCurrentX96) {
+            // sell token0 for token1
 
-        // if (tradedAmountToken0 < tradingParams.minTradedToken0) {
-        //     revertPollAtNextBlock("traded amount too small");
-        // }
+            return (
+                selfReserve0 - newAmount0,
+                newAmount1 - selfReserve1,
+                token0,
+                token1
+            );
+        } else {
+            // sell token1 for token0
 
-        // order = GPv2Order.Data(
-        //     sellToken,
-        //     buyToken,
-        //     GPv2Order.RECEIVER_SAME_AS_OWNER,
-        //     sellAmount,
-        //     buyAmount,
-        //     Utils.validToBucket(MAX_ORDER_DURATION),
-        //     tradingParams.appData,
-        //     0,
-        //     GPv2Order.KIND_SELL,
-        //     true,
-        //     GPv2Order.BALANCE_ERC20,
-        //     GPv2Order.BALANCE_ERC20
-        // );
+            return (
+                selfReserve1 - newAmount1,
+                newAmount0 - selfReserve0,
+                token1,
+                token0
+            );
+        }
     }
 
     /**
@@ -375,13 +415,25 @@ contract CConstantProduct is IERC1271 {
                 "sellTokenBalance must be erc20"
             );
         }
+
+        // TODO: !!!!!!
         // These are the checks needed to satisfy the conditions on in/out
         // amounts for a constant-product curve AMM.
-        if (
-            (sellReserve - order.sellAmount) * order.buyAmount <
-            buyReserve * order.sellAmount
-        ) {
+
+        (uint256 sellAmount, uint256 buyAmount, , ) = getTargetAmounts(
+            tradingParams
+        );
+
+        if (!(order.sellAmount <= sellAmount && order.buyAmount >= buyAmount)) {
             revert IConditionalOrder.OrderNotValid("received amount too low");
+        }
+
+        uint256 tradedAmountToken0 = sellToken == token0
+            ? sellAmount
+            : buyAmount;
+
+        if (tradedAmountToken0 < tradingParams.minTradedToken0) {
+            revert IConditionalOrder.OrderNotValid("traded amount too small");
         }
 
         // No checks on:

@@ -1,12 +1,12 @@
 ta:
-	forge test -vvv --no-match-test "fork|[fF]uzz"
+	clear && forge test -vvv --no-match-test "fork|[fF]uzz"
 t:
-	forge test -vvv --match-contract V3MathLibTest
+	clear && forge test -vvv --match-contract V3MathLibTest
 t1:
-	forge test -vvv --match-contract V3MathLibTest --match-test test_uniswapV3_math_swap_amount0
+	clear && forge test -vvv --match-contract V3MathLibTest --match-test "test_uniswapV3_math_swap_sqrt_price"
 t2:
-	forge test -vvv --match-contract V3MathLibTest --match-test test_uniswapV3_math_swap_sqrt_price
+	clear && forge test -vvv --match-contract V3MathLibTest --match-test "test_uniswapV3_math_swap_sqrt_price_out_of_range"
 t3:
-	forge test -vvv --match-contract ValidateUniswapV3Math --match-test testReturnedTradeValues
+	clear && forge test -vvv --match-contract ValidateUniswapV3Math --match-test "testReturnedTradeValuesOtherSide"
 t4:
-	forge test -vvv --match-contract V3OracleTest --fork-url https://eth-mainnet.g.alchemy.com/v2/38A3rlBUZpErpHxQnoZlEhpRHSu4a7VB --fork-block-number 19955703
+	clear && forge test -vvv --match-contract V3OracleTest --fork-url https://eth-mainnet.g.alchemy.com/v2/38A3rlBUZpErpHxQnoZlEhpRHSu4a7VB --fork-block-number 19955703

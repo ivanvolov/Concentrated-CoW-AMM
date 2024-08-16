@@ -62,7 +62,7 @@ contract V3MathLibTest is CConstantProductFactoryTestHarness {
     }
 
     function test_uniswapV3_math_liquidity() public {
-        (liquidity, amount0Provided, amount1Provided) = provideLiquidity(lp);
+        (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
 
         assertEq(liquidity, 1518129116516325614066);
         assertApproxEqAbs(amount0Provided, lp.amount0, 1e16);
@@ -70,7 +70,7 @@ contract V3MathLibTest is CConstantProductFactoryTestHarness {
     }
 
     function test_uniswapV3_math_swap_amount0() public {
-        (liquidity, , ) = provideLiquidity(lp);
+        (liquidity, , ) = _provideLiquidity(lp);
 
         uint256 swapAmount0 = 8396874645169942;
         (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
@@ -85,7 +85,7 @@ contract V3MathLibTest is CConstantProductFactoryTestHarness {
     }
 
     function test_uniswapV3_math_swap_amount0_full_range() public {
-        (liquidity, amount0Provided, amount1Provided) = provideLiquidity(lp);
+        (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
 
         (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
             .getSwapAmountsFromAmount0(
@@ -102,7 +102,7 @@ contract V3MathLibTest is CConstantProductFactoryTestHarness {
     }
 
     function test_uniswapV3_math_swap_amount1() public {
-        (liquidity, , ) = provideLiquidity(lp);
+        (liquidity, , ) = _provideLiquidity(lp);
 
         uint256 swapAmount1 = 42 ether;
         (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
@@ -117,7 +117,7 @@ contract V3MathLibTest is CConstantProductFactoryTestHarness {
     }
 
     function test_uniswapV3_math_swap_amount1_full_range() public {
-        (liquidity, amount0Provided, amount1Provided) = provideLiquidity(lp);
+        (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
 
         (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
             .getSwapAmountsFromAmount1(
@@ -134,28 +134,84 @@ contract V3MathLibTest is CConstantProductFactoryTestHarness {
     }
 
     function test_uniswapV3_math_swap_sqrt_price() public {
-        // No, the same problem is here of how to get the order of tokens, who is buy and who is sell
-        (liquidity, amount0Provided, amount1Provided) = provideLiquidity(lp);
+        (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
+        assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
 
         uint160 newSqrtPriceX96 = V3MathLib.getSqrtPriceFromPrice(4565 ether);
+        assertEq(newSqrtPriceX96, 5352779161536754564491933729506);
 
-        (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
-            .getAmountsFromSqrtPrice(
+        (uint256 newAmount0, uint256 newAmount1) = V3MathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
                 newSqrtPriceX96,
-                V3MathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                V3MathLib.getSqrtPriceFromPrice(lp.priceUpper),
+                V3MathLib.getSqrtPriceFromPrice(lp.priceLower),
                 liquidity
             );
 
-        assertEq(amount0Swap, 1000512716629909196);
-        assertEq(amount1Swap, 4779728434348080898402);
+        assertEq(amount0Provided, 998995580131581599);
+        assertEq(amount1Provided, 4999999999999999999998);
+        assertEq(newAmount0, 1999508296761490795);
+        assertEq(newAmount1, 220271565651919101596);
+
+        // @Notice: the sqrtPriceX96 goes down so price goes down. This means we will sell token1 for token0.
+    }
+
+    function test_uniswapV3_math_swap_sqrt_price_out_of_range() public {
+        (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
+        assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
+
+        (uint256 newAmount0, uint256 newAmount1) = V3MathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
+                V3MathLib.getSqrtPriceFromPrice(5550 ether),
+                V3MathLib.getSqrtPriceFromPrice(lp.priceUpper),
+                V3MathLib.getSqrtPriceFromPrice(lp.priceLower),
+                liquidity
+            );
+
+        assertEq(newAmount0, 0);
+        assertEq(newAmount1, 10238638112880364775103);
+
+        (newAmount0, newAmount1) = V3MathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
+                V3MathLib.getSqrtPriceFromPrice(6000 ether),
+                V3MathLib.getSqrtPriceFromPrice(lp.priceUpper),
+                V3MathLib.getSqrtPriceFromPrice(lp.priceLower),
+                liquidity
+            );
+
+        assertEq(newAmount0, 0);
+        assertEq(newAmount1, 10238638112880364775103);
+    }
+
+    function test_uniswapV3_math_swap_sqrt_price_other_side() public {
+        (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
+        assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
+
+        uint160 newSqrtPriceX96 = V3MathLib.getSqrtPriceFromPrice(5499 ether);
+        assertEq(newSqrtPriceX96, 5875030437023750975904034809688);
+
+        (uint256 newAmount0, uint256 newAmount1) = V3MathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
+                newSqrtPriceX96,
+                V3MathLib.getSqrtPriceFromPrice(lp.priceUpper),
+                V3MathLib.getSqrtPriceFromPrice(lp.priceLower),
+                liquidity
+            );
+
+        assertEq(amount0Provided, 998995580131581599);
+        assertEq(amount1Provided, 4999999999999999999998);
+        assertEq(newAmount0, 2047079670391420);
+        assertEq(newAmount1, 10227380683092996436668);
+
+        // @Notice: the sqrtPriceX96 goes up so price goes up. This means we will sell token0 for token1.
     }
 
     // Helpers
 
-    function provideLiquidity(
+    function _provideLiquidity(
         LP memory lpFixture
-    ) internal view returns (uint128, uint256, uint256) {
-        uint128 _liquidity = V3MathLib.getLiquidityForAmounts(
+    ) internal pure returns (uint128, uint256, uint256) {
+        uint128 _liquidity = V3MathLib.getLiquidityFromAmountsPrice(
             lpFixture.currentPrice,
             lpFixture.priceLower,
             lpFixture.priceUpper,
@@ -163,12 +219,13 @@ contract V3MathLibTest is CConstantProductFactoryTestHarness {
             lpFixture.amount1
         );
 
-        (uint256 _amount0, uint256 _amount1) = V3MathLib.getAmountsForLiquidity(
-            V3MathLib.getTickFromPrice(lpFixture.currentPrice),
-            V3MathLib.getTickFromPrice(lpFixture.priceLower),
-            V3MathLib.getTickFromPrice(lpFixture.priceUpper),
-            _liquidity
-        );
+        (uint256 _amount0, uint256 _amount1) = V3MathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
+                V3MathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
+                V3MathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
+                V3MathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
+                _liquidity
+            );
         return (_liquidity, _amount0, _amount1);
     }
 }

@@ -13,31 +13,6 @@ import {IUniswapV3Pool} from "@forks/uniswap-v3/IUniswapV3Pool.sol";
 library V3MathLib {
     using FixedPointMathLib for uint256;
 
-    function getTokensFromPool(
-        address pool
-    ) external view returns (address token0, address token1) {
-        return (IUniswapV3Pool(pool).token0(), IUniswapV3Pool(pool).token1());
-    }
-
-    function getAmountsFromSqrtPrice(
-        uint160 sqrtPriceNextX96,
-        uint160 sqrtPriceCurrentX96,
-        uint128 liquidity
-    ) internal pure returns (uint256, uint256) {
-        return (
-            LiquidityAmounts.getAmount0ForLiquidity(
-                sqrtPriceNextX96,
-                sqrtPriceCurrentX96,
-                liquidity
-            ),
-            LiquidityAmounts.getAmount1ForLiquidity(
-                sqrtPriceNextX96,
-                sqrtPriceCurrentX96,
-                liquidity
-            )
-        );
-    }
-
     function getSwapAmountsFromAmount0(
         uint160 sqrtPriceCurrentX96,
         uint128 liquidity,
@@ -93,13 +68,19 @@ library V3MathLib {
         );
     }
 
-    function getLiquidityForAmounts(
+    function getTokensFromPool(
+        address pool
+    ) external view returns (address token0, address token1) {
+        return (IUniswapV3Pool(pool).token0(), IUniswapV3Pool(pool).token1());
+    }
+
+    function getLiquidityFromAmountsPrice(
         uint256 priceCurrent,
         uint256 priceA,
         uint256 priceB,
         uint256 amount0,
         uint256 amount1
-    ) internal view returns (uint128) {
+    ) internal pure returns (uint128) {
         uint256 liquidity = LiquidityAmounts.getLiquidityForAmounts(
             getSqrtPriceFromPrice(priceCurrent),
             getSqrtPriceFromPrice(priceA),
@@ -110,7 +91,7 @@ library V3MathLib {
         return uint128(liquidity);
     }
 
-    function getLiquidityForAmountsSqrtX96(
+    function getLiquidityFromAmountsSqrtPriceX96(
         uint160 sqrtPriceCurrentX96,
         uint160 sqrtPriceAX96,
         uint160 sqrtPriceBX96,
@@ -127,20 +108,19 @@ library V3MathLib {
         return uint128(liquidity);
     }
 
-    function getAmountsForLiquidity(
-        int24 tickCurrent,
-        int24 tickLower,
-        int24 tickUpper,
+    function getAmountsFromLiquiditySqrtPriceX96(
+        uint160 sqrtPriceNextX96,
+        uint160 sqrtPriceUpperX96,
+        uint160 sqrtPriceLowerX96,
         uint128 liquidity
     ) internal pure returns (uint256, uint256) {
-        (uint256 amount0, uint256 amount1) = LiquidityAmounts
-            .getAmountsForLiquidity(
-                TickMath.getSqrtPriceAtTick(tickCurrent),
-                TickMath.getSqrtPriceAtTick(tickLower),
-                TickMath.getSqrtPriceAtTick(tickUpper),
+        return
+            LiquidityAmounts.getAmountsForLiquidity(
+                sqrtPriceNextX96,
+                sqrtPriceUpperX96,
+                sqrtPriceLowerX96,
                 liquidity
             );
-        return (amount0, amount1);
     }
 
     function getTickFromPrice(uint256 price) internal pure returns (int24) {
@@ -160,16 +140,6 @@ library V3MathLib {
     ) internal pure returns (uint160) {
         return getSqrtPriceAtTick(V3MathLib.getTickFromPrice(price));
     }
-
-    // function getPriceFromSqrtPrice(
-    //     uint160 sqrtPriceX96
-    // ) internal view returns (uint160) {
-    //     console.logInt(TickMath.getTickAtSqrtPrice(sqrtPriceX96));
-    //     return
-    //         V3TickMath.getSqrtRatioAtTick(
-    //             TickMath.getTickAtSqrtPrice(sqrtPriceX96)
-    //         );
-    // }
 
     function getSqrtPriceAtTick(int24 tick) internal pure returns (uint160) {
         return TickMath.getSqrtPriceAtTick(tick);
