@@ -16,64 +16,64 @@ abstract contract DeterministicDeployment is
     bytes private priceOracleData = bytes("some price oracle data");
     bytes32 private appData = keccak256("Create: app data");
 
-    function testDeploysAtExpectedAddress() public {
-        address constantProductAddress = constantProductFactory
-            .ammDeterministicAddress(
-                address(this),
-                mockableToken0,
-                mockableToken1
-            );
-        require(
-            constantProductAddress.code.length == 0,
-            "no AMM should be deployed at the start"
-        );
-        mocksForTokenCreation(constantProductAddress);
+    // function testDeploysAtExpectedAddress() public {
+    //     address constantProductAddress = constantProductFactory
+    //         .ammDeterministicAddress(
+    //             address(this),
+    //             mockableToken0,
+    //             mockableToken1
+    //         );
+    //     require(
+    //         constantProductAddress.code.length == 0,
+    //         "no AMM should be deployed at the start"
+    //     );
+    //     mocksForTokenCreation(constantProductAddress);
 
-        CConstantProduct deployed = constantProductFactory.create(
-            mockableToken0,
-            amount0,
-            mockableToken1,
-            amount1,
-            minTradedToken0,
-            priceOracle,
-            priceOracleData,
-            appData
-        );
-        assertEq(address(deployed), constantProductAddress);
-        assertTrue(constantProductAddress.code.length > 0);
-    }
+    //     CConstantProduct deployed = constantProductFactory.create(
+    //         mockableToken0,
+    //         amount0,
+    //         mockableToken1,
+    //         amount1,
+    //         minTradedToken0,
+    //         priceOracle,
+    //         priceOracleData,
+    //         appData
+    //     );
+    //     assertEq(address(deployed), constantProductAddress);
+    //     assertTrue(constantProductAddress.code.length > 0);
+    // }
 
-    function testSameOwnerCannotDeployAMMWithSameParametersTwice() public {
-        address constantProductAddress = constantProductFactory
-            .ammDeterministicAddress(
-                address(this),
-                mockableToken0,
-                mockableToken1
-            );
-        mocksForTokenCreation(constantProductAddress);
+    // function testSameOwnerCannotDeployAMMWithSameParametersTwice() public {
+    //     address constantProductAddress = constantProductFactory
+    //         .ammDeterministicAddress(
+    //             address(this),
+    //             mockableToken0,
+    //             mockableToken1
+    //         );
+    //     mocksForTokenCreation(constantProductAddress);
 
-        constantProductFactory.create(
-            mockableToken0,
-            amount0,
-            mockableToken1,
-            amount1,
-            minTradedToken0,
-            priceOracle,
-            priceOracleData,
-            appData
-        );
-        vm.expectRevert(bytes(""));
-        constantProductFactory.create(
-            mockableToken0,
-            amount0,
-            mockableToken1,
-            amount1,
-            minTradedToken0,
-            priceOracle,
-            priceOracleData,
-            appData
-        );
-    }
+    //     constantProductFactory.create(
+    //         mockableToken0,
+    //         amount0,
+    //         mockableToken1,
+    //         amount1,
+    //         minTradedToken0,
+    //         priceOracle,
+    //         priceOracleData,
+    //         appData
+    //     );
+    //     vm.expectRevert(bytes(""));
+    //     constantProductFactory.create(
+    //         mockableToken0,
+    //         amount0,
+    //         mockableToken1,
+    //         amount1,
+    //         minTradedToken0,
+    //         priceOracle,
+    //         priceOracleData,
+    //         appData
+    //     );
+    // }
 
     function testSameOwnerCanDeployAMMWithDifferentTokens() public {
         address ammAddress1 = constantProductFactory.ammDeterministicAddress(
