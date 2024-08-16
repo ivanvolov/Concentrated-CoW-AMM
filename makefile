@@ -8,9 +8,9 @@ t2:
 
 
 t3:
-	clear && forge test -vv --match-contract ValidateOrderHash
+	clear && forge test -vv --match-contract UniswapV3PriceOracleTest
 t4:
-	clear && forge test -vv --match-contract ValidateOrderHash --match-test "testReturnsMagicValueIfTradeable"
+	clear && forge test -vv --match-contract ValidateAmmMath --match-test "getExpectedAmountIn"
 
 
 

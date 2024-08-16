@@ -2,14 +2,14 @@
 pragma solidity ^0.8.24;
 
 import "forge-std/console.sol";
-import {CConstantProductFactoryTestHarness} from "./CConstantProductFactoryTestHarness.sol";
+import {Test} from "forge-std/Test.sol";
 
 import {V3MathLib} from "@src/libraries/V3MathLib.sol";
 import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
 import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
 import {TickMath} from "@v4-core/libraries/TickMath.sol";
 
-contract V3MathLibTest is CConstantProductFactoryTestHarness {
+contract V3MathLibTest is Test {
     struct LP {
         uint256 currentPrice;
         uint256 priceUpper;
@@ -23,9 +23,7 @@ contract V3MathLibTest is CConstantProductFactoryTestHarness {
     uint256 amount0Provided;
     uint256 amount1Provided;
 
-    function setUp() public override {
-        super.setUp();
-
+    function setUp() public {
         lp = LP({
             currentPrice: 5000 ether,
             priceLower: 4545 ether,

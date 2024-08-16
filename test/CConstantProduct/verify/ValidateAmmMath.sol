@@ -6,50 +6,12 @@ import {UniswapV3PriceOracle} from "src/oracles/UniswapV3PriceOracle.sol";
 
 import {CConstantProductTestHarness} from "../CConstantProductTestHarness.sol";
 
-abstract contract ValidateAmmMath is CConstantProductTestHarness {
-    // IUniswapV2Pair pair =
-    //     IUniswapV2Pair(makeAddr("pair for math verification"));
+//TODO: uncomment
+contract ValidateAmmMath is CConstantProductTestHarness {
     // function setUpAmmWithReserves(
     //     uint256 amountToken0,
     //     uint256 amountToken1
-    // ) internal {
-    //     vm.mockCall(
-    //         address(pair),
-    //         abi.encodeCall(IUniswapV2Pair.token0, ()),
-    //         abi.encode(constantProduct.token0())
-    //     );
-    //     vm.mockCall(
-    //         address(pair),
-    //         abi.encodeCall(IUniswapV2Pair.token1, ()),
-    //         abi.encode(constantProduct.token1())
-    //     );
-    //     // Reverts for everything else
-    //     vm.mockCallRevert(
-    //         address(pair),
-    //         hex"",
-    //         abi.encode("Called unexpected function on mock pair")
-    //     );
-    //     require(
-    //         pair.token0() != pair.token1(),
-    //         "Pair setup failed: should use distinct tokens"
-    //     );
-    //     vm.mockCall(
-    //         address(pair.token0()),
-    //         abi.encodeWithSelector(
-    //             IERC20.balanceOf.selector,
-    //             address(constantProduct)
-    //         ),
-    //         abi.encode(amountToken0)
-    //     );
-    //     vm.mockCall(
-    //         address(pair.token1()),
-    //         abi.encodeWithSelector(
-    //             IERC20.balanceOf.selector,
-    //             address(constantProduct)
-    //         ),
-    //         abi.encode(amountToken1)
-    //     );
-    // }
+    // ) internal {}
     // function setUpOrderWithReserves(
     //     uint256 amountToken0,
     //     uint256 amountToken1

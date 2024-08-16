@@ -5,6 +5,7 @@ import {ICPriceOracle, CConstantProduct, CConstantProductFactory, ComposableCoW,
 
 import {CConstantProductFactoryTestHarness} from "./CConstantProductFactoryTestHarness.sol";
 
+//TODO: uncomment
 abstract contract UpdateParameters is CConstantProductFactoryTestHarness {
     // uint256 private initMinTradedToken0 = 42;
     // uint256 private newMinTradedToken0 = 1337;

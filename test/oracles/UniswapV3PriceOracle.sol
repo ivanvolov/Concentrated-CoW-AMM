@@ -1,94 +1,53 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
+import "forge-std/console.sol";
 import {Test} from "forge-std/Test.sol";
 
+import {V3MathLib} from "@src/libraries/V3MathLib.sol";
+import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
+import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
+import {TickMath} from "@v4-core/libraries/TickMath.sol";
+
+import {IUniswapV3Factory} from "@forks/uniswap-v3/IUniswapV3Factory.sol";
 import {UniswapV3PriceOracle} from "src/oracles/UniswapV3PriceOracle.sol";
+import {OracleLibrary} from "@forks/uniswap-v3/OracleLibrary.sol";
 
 contract UniswapV3PriceOracleTest is Test {
-    address private USDC = makeAddr("USDC");
-    address private WETH = makeAddr("WETH");
-    address private DEFAULT_PAIR = makeAddr("default USDC/WETH pair");
-    uint128 private constant reserve0 = 1337;
-    uint128 private constant reserve1 = 31337;
+    uint256 mainnetFork;
+    string MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
 
+    address oracleV3pool;
     UniswapV3PriceOracle internal oracle;
 
-    // function setUp() public {
-    //     oracle = new UniswapV3PriceOracle();
+    address private ORACLE_V3_FACTORY =
+        0x1F98431c8aD98523631AE4a59f267346ea31F984;
+    address private USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address private WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
-    //     pair = IUniswapV2Pair(DEFAULT_PAIR);
+    function setUp() public {
+        mainnetFork = vm.createFork(MAINNET_RPC_URL);
+        vm.selectFork(mainnetFork);
+        vm.rollFork(19_955_703);
 
-    //     vm.mockCall(
-    //         address(pair),
-    //         abi.encodeCall(IUniswapV2Pair.token0, ()),
-    //         abi.encode(USDC)
-    //     );
-    //     vm.mockCall(
-    //         address(pair),
-    //         abi.encodeCall(IUniswapV2Pair.token1, ()),
-    //         abi.encode(WETH)
-    //     );
-    //     uint32 unusedTimestamp = 31337;
-    //     vm.mockCall(
-    //         address(DEFAULT_PAIR),
-    //         abi.encodeCall(IUniswapV2Pair.getReserves, ()),
-    //         abi.encode(reserve0, reserve1, unusedTimestamp)
-    //     );
-    // }
+        oracle = new UniswapV3PriceOracle();
 
-    // function getDefaultOracleData()
-    //     internal
-    //     view
-    //     returns (UniswapV3PriceOracle.Data memory data)
-    // {
-    //     data = UniswapV3PriceOracle.Data(pair);
-    // }
+        IUniswapV3Factory oracleFactory = IUniswapV3Factory(ORACLE_V3_FACTORY);
+        oracleV3pool = oracleFactory.getPool(WETH, USDC, 3000);
+    }
 
-    // function testReturnsExpectedPrice() public {
-    //     (uint256 priceNumerator, uint256 priceDenominator) = oracle.getPrice(
-    //         USDC,
-    //         WETH,
-    //         abi.encode(getDefaultOracleData())
-    //     );
-    //     assertEq(priceNumerator, reserve0);
-    //     assertEq(priceDenominator, reserve1);
-    // }
+    function test_get_arithmeticMeanTick_from_pool() public {
+        (int24 arithmeticMeanTick, ) = OracleLibrary.consult(oracleV3pool, 1);
+        assertEq(arithmeticMeanTick, 193756);
+    }
 
-    // function testInvertsPriceIfTokensAreInverted() public {
-    //     (uint256 priceNumerator, uint256 priceDenominator) = oracle.getPrice(
-    //         WETH,
-    //         USDC,
-    //         abi.encode(getDefaultOracleData())
-    //     );
-    //     assertEq(priceNumerator, reserve1);
-    //     assertEq(priceDenominator, reserve0);
-    // }
+    function testReturnsExpectedPrice() public {
+        uint256 sqrtPriceX96 = oracle.getSqrtPriceX96(
+            USDC,
+            WETH,
+            abi.encode(oracleV3pool, 1)
+        );
 
-    // function testRevertsIfPairUsesIncorrectToken0() public {
-    //     vm.expectRevert("oracle: invalid token0");
-    //     oracle.getPrice(
-    //         makeAddr("bad token 0"),
-    //         WETH,
-    //         abi.encode(getDefaultOracleData())
-    //     );
-    // }
-
-    // function testRevertsIfPairUsesIncorrectToken1() public {
-    //     vm.expectRevert("oracle: invalid token1");
-    //     oracle.getPrice(
-    //         USDC,
-    //         makeAddr("bad token 1"),
-    //         abi.encode(getDefaultOracleData())
-    //     );
-    // }
-
-    // function testRevertsIfPairUsesIncorrectTokenWhenInverted() public {
-    //     vm.expectRevert("oracle: invalid token0");
-    //     oracle.getPrice(
-    //         makeAddr("bad token 1"),
-    //         USDC,
-    //         abi.encode(getDefaultOracleData())
-    //     );
-    // }
+        assertEq(sqrtPriceX96, 1276519083233114681625590680468888);
+    }
 }

@@ -5,6 +5,7 @@ import {CConstantProduct, GPv2Order, IERC20, IConditionalOrder} from "src/CConst
 
 import {CConstantProductTestHarness} from "../CConstantProductTestHarness.sol";
 
+//TODO: uncomment
 abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
     // function setUpBasicOrder()
     //     internal

@@ -5,6 +5,7 @@ import {CConstantProduct, CConstantProductFactory, ICPriceOracle} from "src/CCon
 
 import {CConstantProductFactoryTestHarness} from "./CConstantProductFactoryTestHarness.sol";
 
+//TODO: uncomment
 abstract contract DisableTrading is CConstantProductFactoryTestHarness {
     // function testOnlyOwnerCanDisableTrading() public {
     //     address notTheOwner = makeAddr("some address that isn't the owner");
