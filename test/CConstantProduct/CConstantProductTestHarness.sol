@@ -103,7 +103,8 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     }
 
     function setUpDefaultPair() internal {
-        //TODO: later
+        // TODO: remove
+        // @Notice: we don't need it in our oracle simulation case.
     }
 
     function getDefaultTradingParams()

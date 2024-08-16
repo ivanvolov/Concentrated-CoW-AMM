@@ -9,7 +9,7 @@ t2:
 
 
 t3:
-	clear && forge test -vv --match-contract ValidateOrderParametersTest
+	clear && forge test -vv --match-contract EnforceCommitmentTest
 
 
 
