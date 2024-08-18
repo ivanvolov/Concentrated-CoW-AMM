@@ -48,7 +48,7 @@ abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
 
         setUpReserves(address(constantProduct), oReserve0, oReserve1);
 
-        setUpOracleResponse(DEFAULT_NEW_PRICE_OTHER_SIDE_X96);
+        setUpDefaultOracleResponseOtherSide();
         GPv2Order.Data memory order = checkedGetTradeableOrder(
             defaultTradingParams
         );

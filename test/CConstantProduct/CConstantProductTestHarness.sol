@@ -41,10 +41,8 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     bytes32 private DEFAULT_DOMAIN_SEPARATOR =
         keccak256(bytes("domain separator hash"));
 
-    address private DEFAULT_POOL_ADDRESS =
-        makeAddr("default USDC/WETH pool address");
+    bytes DEFAULT_PRICE_ORACLE_DATA = bytes("some price oracle data");
 
-    uint32 DEFAULT_SECONDS_AGO = 1;
     uint256 DEFAULT_PRICE_CURRENT = 5000 ether;
     uint256 DEFAULT_PRICE_UPPER = 5500 ether;
     uint256 DEFAULT_PRICE_LOWER = 4545 ether;
@@ -116,7 +114,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             CConstantProduct.TradingParams(
                 0,
                 uniswapV3PriceOracle,
-                abi.encode(DEFAULT_POOL_ADDRESS, DEFAULT_SECONDS_AGO),
+                DEFAULT_PRICE_ORACLE_DATA,
                 DEFAULT_APPDATA,
                 V3MathLib.getSqrtPriceFromPrice(defaultLpFixture.currentPrice),
                 V3MathLib.getSqrtPriceFromPrice(defaultLpFixture.priceLower),
@@ -165,19 +163,34 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     }
 
     function setUpDefaultOracleResponse() public {
-        setUpOracleResponse(DEFAULT_NEW_PRICE_X96);
+        setUpOracleResponse(
+            DEFAULT_NEW_PRICE_X96,
+            address(uniswapV3PriceOracle),
+            address(constantProduct.token0()),
+            address(constantProduct.token1())
+        );
     }
 
-    function setUpOracleResponse(uint160 newSqrtPriceX96) public {
-        vm.mockCall(
+    function setUpDefaultOracleResponseOtherSide() public {
+        setUpOracleResponse(
+            DEFAULT_NEW_PRICE_OTHER_SIDE_X96,
             address(uniswapV3PriceOracle),
+            address(constantProduct.token0()),
+            address(constantProduct.token1())
+        );
+    }
+
+    function setUpOracleResponse(
+        uint160 newSqrtPriceX96,
+        address oracle,
+        address token0,
+        address token1
+    ) public {
+        vm.mockCall(
+            oracle,
             abi.encodeCall(
                 ICPriceOracle.getSqrtPriceX96,
-                (
-                    address(constantProduct.token0()),
-                    address(constantProduct.token1()),
-                    abi.encode(DEFAULT_POOL_ADDRESS, DEFAULT_SECONDS_AGO)
-                )
+                (token0, token1, DEFAULT_PRICE_ORACLE_DATA)
             ),
             abi.encode(newSqrtPriceX96)
         );

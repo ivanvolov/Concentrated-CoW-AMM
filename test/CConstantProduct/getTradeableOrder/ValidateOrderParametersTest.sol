@@ -51,7 +51,7 @@ abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
         CConstantProduct.TradingParams
             memory defaultTradingParams = getDefaultTradingParams();
         setUpDefaultReserves(address(constantProduct));
-        setUpOracleResponse(DEFAULT_NEW_PRICE_OTHER_SIDE_X96);
+        setUpDefaultOracleResponseOtherSide();
         // The revert message depends on the block. To make this more visible,
         // we set an arbitrary block number.
         uint256 currentBlock = 1337;
