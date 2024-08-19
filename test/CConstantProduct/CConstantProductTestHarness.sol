@@ -40,12 +40,10 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     bytes32 private DEFAULT_COMMITMENT = keccak256(bytes("order hash"));
     bytes32 private DEFAULT_DOMAIN_SEPARATOR =
         keccak256(bytes("domain separator hash"));
-
     bytes DEFAULT_PRICE_ORACLE_DATA = bytes("some price oracle data");
 
-    uint256 DEFAULT_PRICE_CURRENT = 5000 ether;
-    uint256 DEFAULT_PRICE_UPPER = 5500 ether;
-    uint256 DEFAULT_PRICE_LOWER = 4545 ether;
+    uint160 DEFAULT_PRICE_CURRENT_X96 =
+        V3MathLib.getSqrtPriceFromPrice(5000 ether);
 
     uint160 DEFAULT_NEW_PRICE_X96 = V3MathLib.getSqrtPriceFromPrice(4565 ether);
     uint160 DEFAULT_NEW_PRICE_OTHER_SIDE_X96 =
@@ -191,6 +189,23 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             abi.encodeCall(
                 ICPriceOracle.getSqrtPriceX96,
                 (token0, token1, DEFAULT_PRICE_ORACLE_DATA)
+            ),
+            abi.encode(newSqrtPriceX96)
+        );
+    }
+
+    function setUpOracleResponse(
+        uint160 newSqrtPriceX96,
+        address oracle,
+        address token0,
+        address token1,
+        bytes memory priceOracleData
+    ) public {
+        vm.mockCall(
+            oracle,
+            abi.encodeCall(
+                ICPriceOracle.getSqrtPriceX96,
+                (token0, token1, priceOracleData)
             ),
             abi.encode(newSqrtPriceX96)
         );

@@ -5,109 +5,141 @@ import {ICPriceOracle, CConstantProduct, CConstantProductFactory, ComposableCoW,
 
 import {CConstantProductFactoryTestHarness} from "./CConstantProductFactoryTestHarness.sol";
 
-//TODO: uncomment
+import {V3MathLib} from "src/libraries/V3MathLib.sol";
+
 abstract contract UpdateParameters is CConstantProductFactoryTestHarness {
-    // uint256 private initMinTradedToken0 = 42;
-    // uint256 private newMinTradedToken0 = 1337;
-    // ICPriceOracle private initPriceOracle =
-    //     ICPriceOracle(makeAddr("UpdateParameters: price oracle"));
-    // ICPriceOracle private newPriceOracle =
-    //     ICPriceOracle(makeAddr("UpdateParameters: updated price oracle"));
-    // bytes private initPriceOracleData = bytes("some price oracle data");
-    // bytes private newPriceOracleData = bytes("some updated price oracle data");
-    // bytes32 private initAppData = keccak256("UpdateParameters: app data");
-    // bytes32 private newAppData =
-    //     keccak256("UpdateParameters: updated app data");
-    // function testOnlyOwnerCanUpdateParams() public {
-    //     address notTheOwner = makeAddr("some address that isn't the owner");
-    //     CConstantProduct amm = setupInitialAMM();
-    //     require(
-    //         constantProductFactory.owner(amm) != notTheOwner,
-    //         "bad test setup"
-    //     );
-    //     vm.expectRevert(
-    //         abi.encodeWithSelector(
-    //             CConstantProductFactory.OnlyOwnerCanCall.selector,
-    //             address(this)
-    //         )
-    //     );
-    //     vm.prank(notTheOwner);
-    //     constantProductFactory.updateParameters(
-    //         amm,
-    //         newMinTradedToken0,
-    //         newPriceOracle,
-    //         newPriceOracleData,
-    //         newAppData
-    //     );
-    // }
-    // function testUpdatesTradingParamsHash() public {
-    //     CConstantProduct amm = setupInitialAMM();
-    //     CConstantProduct.TradingParams memory params = CConstantProduct
-    //         .TradingParams({
-    //             minTradedToken0: newMinTradedToken0,
-    //             priceOracle: newPriceOracle,
-    //             priceOracleData: newPriceOracleData,
-    //             appData: newAppData
-    //         });
-    //     bytes32 newParamsHash = amm.hash(params);
-    //     require(amm.tradingParamsHash() != newParamsHash, "bad test setup");
-    //     constantProductFactory.updateParameters(
-    //         amm,
-    //         newMinTradedToken0,
-    //         newPriceOracle,
-    //         newPriceOracleData,
-    //         newAppData
-    //     );
-    //     assertEq(amm.tradingParamsHash(), newParamsHash);
-    // }
-    // function testUpdatingEmitsExpectedEvents() public {
-    //     CConstantProduct amm = setupInitialAMM();
-    //     CConstantProduct.TradingParams memory params = CConstantProduct
-    //         .TradingParams({
-    //             minTradedToken0: newMinTradedToken0,
-    //             priceOracle: newPriceOracle,
-    //             priceOracleData: newPriceOracleData,
-    //             appData: newAppData
-    //         });
-    //     vm.expectEmit();
-    //     emit CConstantProductFactory.TradingDisabled(amm);
-    //     vm.expectEmit();
-    //     emit ComposableCoW.ConditionalOrderCreated(
-    //         address(amm),
-    //         IConditionalOrder.ConditionalOrderParams(
-    //             IConditionalOrder(address(constantProductFactory)),
-    //             bytes32(0),
-    //             abi.encode(params)
-    //         )
-    //     );
-    //     constantProductFactory.updateParameters(
-    //         amm,
-    //         newMinTradedToken0,
-    //         newPriceOracle,
-    //         newPriceOracleData,
-    //         newAppData
-    //     );
-    // }
-    // function setupInitialAMM() private returns (CConstantProduct) {
-    //     uint256 amount0 = 12345;
-    //     uint256 amount1 = 67890;
-    //     mocksForTokenCreation(
-    //         constantProductFactory.ammDeterministicAddress(
-    //             address(this),
-    //             mockableToken0,
-    //             mockableToken1
-    //         )
-    //     );
-    //     return
-    //         constantProductFactory.create(
-    //             mockableToken0,
-    //             amount0,
-    //             mockableToken1,
-    //             amount1,
-    //             initMinTradedToken0,
-    //             initPriceOracle,
-    //             initPriceOracleData,
-    //             initAppData
-    //         );
-    // }
+    uint256 private initMinTradedToken0 = 42;
+    uint256 private newMinTradedToken0 = 1337;
+    ICPriceOracle private initPriceOracle =
+        ICPriceOracle(makeAddr("UpdateParameters: price oracle"));
+    ICPriceOracle private newPriceOracle =
+        ICPriceOracle(makeAddr("UpdateParameters: updated price oracle"));
+    bytes private initPriceOracleData = bytes("some price oracle data");
+    bytes private newPriceOracleData = bytes("some updated price oracle data");
+    bytes32 private initAppData = keccak256("UpdateParameters: app data");
+    bytes32 private newAppData =
+        keccak256("UpdateParameters: updated app data");
+
+    uint160 private DEFAULT_PRICE_UPPER_X96 =
+        V3MathLib.getSqrtPriceFromPrice(5500 ether);
+    uint160 private DEFAULT_PRICE_LOWER_X96 =
+        V3MathLib.getSqrtPriceFromPrice(4545 ether);
+    uint128 private DEFAULT_LIQUIDITY = 1518129116516325613903;
+
+    function testOnlyOwnerCanUpdateParams() public {
+        address notTheOwner = makeAddr("some address that isn't the owner");
+        CConstantProduct amm = setupInitialAMM();
+        require(
+            constantProductFactory.owner(amm) != notTheOwner,
+            "bad test setup"
+        );
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                CConstantProductFactory.OnlyOwnerCanCall.selector,
+                address(this)
+            )
+        );
+        vm.prank(notTheOwner);
+        constantProductFactory.updateParameters(
+            amm,
+            newMinTradedToken0,
+            newPriceOracle,
+            newPriceOracleData,
+            newAppData,
+            DEFAULT_NEW_PRICE_X96,
+            DEFAULT_PRICE_UPPER_X96,
+            DEFAULT_PRICE_LOWER_X96
+        );
+    }
+
+    function testUpdatesTradingParamsHash() public {
+        CConstantProduct amm = setupInitialAMM();
+        CConstantProduct.TradingParams memory params = CConstantProduct
+            .TradingParams({
+                minTradedToken0: newMinTradedToken0,
+                priceOracle: newPriceOracle,
+                priceOracleData: newPriceOracleData,
+                appData: newAppData,
+                sqrtPriceCurrentX96: DEFAULT_NEW_PRICE_X96,
+                sqrtPriceAX96: DEFAULT_PRICE_UPPER_X96,
+                sqrtPriceBX96: DEFAULT_PRICE_LOWER_X96
+            });
+        bytes32 newParamsHash = amm.hash(params);
+        require(amm.tradingParamsHash() != newParamsHash, "bad test setup");
+        constantProductFactory.updateParameters(
+            amm,
+            newMinTradedToken0,
+            newPriceOracle,
+            newPriceOracleData,
+            newAppData,
+            DEFAULT_NEW_PRICE_X96,
+            DEFAULT_PRICE_UPPER_X96,
+            DEFAULT_PRICE_LOWER_X96
+        );
+        assertEq(amm.tradingParamsHash(), newParamsHash);
+    }
+
+    function testUpdatingEmitsExpectedEvents() public {
+        CConstantProduct amm = setupInitialAMM();
+        CConstantProduct.TradingParams memory params = CConstantProduct
+            .TradingParams({
+                minTradedToken0: newMinTradedToken0,
+                priceOracle: newPriceOracle,
+                priceOracleData: newPriceOracleData,
+                appData: newAppData,
+                sqrtPriceCurrentX96: DEFAULT_NEW_PRICE_X96,
+                sqrtPriceAX96: DEFAULT_PRICE_UPPER_X96,
+                sqrtPriceBX96: DEFAULT_PRICE_LOWER_X96
+            });
+        vm.expectEmit();
+        emit CConstantProductFactory.TradingDisabled(amm);
+        vm.expectEmit();
+        emit ComposableCoW.ConditionalOrderCreated(
+            address(amm),
+            IConditionalOrder.ConditionalOrderParams(
+                IConditionalOrder(address(constantProductFactory)),
+                bytes32(0),
+                abi.encode(params)
+            )
+        );
+        constantProductFactory.updateParameters(
+            amm,
+            newMinTradedToken0,
+            newPriceOracle,
+            newPriceOracleData,
+            newAppData,
+            DEFAULT_NEW_PRICE_X96,
+            DEFAULT_PRICE_UPPER_X96,
+            DEFAULT_PRICE_LOWER_X96
+        );
+    }
+
+    function setupInitialAMM() private returns (CConstantProduct) {
+        mocksForTokenCreation(
+            constantProductFactory.ammDeterministicAddress(
+                address(this),
+                mockableToken0,
+                mockableToken1
+            )
+        );
+        setUpOracleResponse(
+            DEFAULT_PRICE_CURRENT_X96,
+            address(initPriceOracle),
+            address(mockableToken0),
+            address(mockableToken1),
+            initPriceOracleData
+        );
+        return
+            constantProductFactory.create(
+                mockableToken0,
+                mockableToken1,
+                DEFAULT_LIQUIDITY,
+                initMinTradedToken0,
+                initPriceOracle,
+                initPriceOracleData,
+                initAppData,
+                DEFAULT_PRICE_UPPER_X96,
+                DEFAULT_PRICE_LOWER_X96
+            );
+    }
 }
