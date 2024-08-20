@@ -1,4 +1,4 @@
 ta:
 	clear && forge test -vvv --no-match-test "fork|[fF]uzz"
 t:
-	clear && forge test -vvv --match-contract DisableTrading --match-test test
+	clear && forge test -vvv --match-contract GetTradeableOrderWithSignature --match-test test
