@@ -20,12 +20,6 @@ abstract contract UpdateParameters is CConstantProductFactoryTestHarness {
     bytes32 private newAppData =
         keccak256("UpdateParameters: updated app data");
 
-    uint160 private DEFAULT_PRICE_UPPER_X96 =
-        V3MathLib.getSqrtPriceFromPrice(5500 ether);
-    uint160 private DEFAULT_PRICE_LOWER_X96 =
-        V3MathLib.getSqrtPriceFromPrice(4545 ether);
-    uint128 private DEFAULT_LIQUIDITY = 1518129116516325613903;
-
     function testOnlyOwnerCanUpdateParams() public {
         address notTheOwner = makeAddr("some address that isn't the owner");
         CConstantProduct amm = setupInitialAMM();

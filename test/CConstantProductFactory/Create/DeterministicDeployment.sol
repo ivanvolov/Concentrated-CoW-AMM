@@ -12,16 +12,6 @@ abstract contract DeterministicDeployment is
 {
     uint256 private amount0 = 1999508296761490795;
     uint256 private amount1 = 220271565651919101572;
-    uint160 private DEFAULT_PRICE_UPPER_X96 =
-        V3MathLib.getSqrtPriceFromPrice(5500 ether);
-    uint160 private DEFAULT_PRICE_LOWER_X96 =
-        V3MathLib.getSqrtPriceFromPrice(4545 ether);
-    uint128 private DEFAULT_LIQUIDITY = 1518129116516325613903;
-
-    uint256 private minTradedToken0 = 42;
-    ICPriceOracle private priceOracle =
-        ICPriceOracle(makeAddr("Create: price oracle"));
-    bytes32 private appData = keccak256("Create: app data");
 
     function testDeploysAtExpectedAddress() public {
         address constantProductAddress = constantProductFactory
@@ -37,7 +27,7 @@ abstract contract DeterministicDeployment is
         mocksForTokenCreation(constantProductAddress);
         setUpOracleResponse(
             DEFAULT_NEW_PRICE_X96,
-            address(priceOracle),
+            address(defaultPriceOracle),
             address(mockableToken0),
             address(mockableToken1)
         );
@@ -46,9 +36,9 @@ abstract contract DeterministicDeployment is
             mockableToken1,
             DEFAULT_LIQUIDITY,
             minTradedToken0,
-            priceOracle,
+            defaultPriceOracle,
             DEFAULT_PRICE_ORACLE_DATA,
-            appData,
+            defaultAppData,
             DEFAULT_PRICE_UPPER_X96,
             DEFAULT_PRICE_LOWER_X96
         );
@@ -66,7 +56,7 @@ abstract contract DeterministicDeployment is
         mocksForTokenCreation(constantProductAddress);
         setUpOracleResponse(
             DEFAULT_NEW_PRICE_X96,
-            address(priceOracle),
+            address(defaultPriceOracle),
             address(mockableToken0),
             address(mockableToken1)
         );
@@ -75,9 +65,9 @@ abstract contract DeterministicDeployment is
             mockableToken1,
             DEFAULT_LIQUIDITY,
             minTradedToken0,
-            priceOracle,
+            defaultPriceOracle,
             DEFAULT_PRICE_ORACLE_DATA,
-            appData,
+            defaultAppData,
             DEFAULT_PRICE_UPPER_X96,
             DEFAULT_PRICE_LOWER_X96
         );
@@ -87,9 +77,9 @@ abstract contract DeterministicDeployment is
             mockableToken1,
             DEFAULT_LIQUIDITY,
             minTradedToken0,
-            priceOracle,
+            defaultPriceOracle,
             DEFAULT_PRICE_ORACLE_DATA,
-            appData,
+            defaultAppData,
             DEFAULT_PRICE_UPPER_X96,
             DEFAULT_PRICE_LOWER_X96
         );
@@ -104,7 +94,7 @@ abstract contract DeterministicDeployment is
         mocksForTokenCreation(ammAddress1);
         setUpOracleResponse(
             DEFAULT_NEW_PRICE_X96,
-            address(priceOracle),
+            address(defaultPriceOracle),
             address(mockableToken0),
             address(mockableToken1)
         );
@@ -132,7 +122,7 @@ abstract contract DeterministicDeployment is
         );
         setUpOracleResponse(
             DEFAULT_NEW_PRICE_X96,
-            address(priceOracle),
+            address(defaultPriceOracle),
             address(extraToken0),
             address(extraToken1)
         );
@@ -142,9 +132,9 @@ abstract contract DeterministicDeployment is
             mockableToken1,
             DEFAULT_LIQUIDITY,
             minTradedToken0,
-            priceOracle,
+            defaultPriceOracle,
             DEFAULT_PRICE_ORACLE_DATA,
-            appData,
+            defaultAppData,
             DEFAULT_PRICE_UPPER_X96,
             DEFAULT_PRICE_LOWER_X96
         );
@@ -154,9 +144,9 @@ abstract contract DeterministicDeployment is
             extraToken1,
             DEFAULT_LIQUIDITY,
             minTradedToken0,
-            priceOracle,
+            defaultPriceOracle,
             DEFAULT_PRICE_ORACLE_DATA,
-            appData,
+            defaultAppData,
             DEFAULT_PRICE_UPPER_X96,
             DEFAULT_PRICE_LOWER_X96
         );
@@ -179,7 +169,7 @@ abstract contract DeterministicDeployment is
         mocksForTokenCreation(ammOwner2);
         setUpOracleResponse(
             DEFAULT_NEW_PRICE_X96,
-            address(priceOracle),
+            address(defaultPriceOracle),
             address(mockableToken0),
             address(mockableToken1)
         );
@@ -189,9 +179,9 @@ abstract contract DeterministicDeployment is
             mockableToken1,
             DEFAULT_LIQUIDITY,
             minTradedToken0,
-            priceOracle,
+            defaultPriceOracle,
             DEFAULT_PRICE_ORACLE_DATA,
-            appData,
+            defaultAppData,
             DEFAULT_PRICE_UPPER_X96,
             DEFAULT_PRICE_LOWER_X96
         );
@@ -201,9 +191,9 @@ abstract contract DeterministicDeployment is
             mockableToken1,
             DEFAULT_LIQUIDITY,
             minTradedToken0,
-            priceOracle,
+            defaultPriceOracle,
             DEFAULT_PRICE_ORACLE_DATA,
-            appData,
+            defaultAppData,
             DEFAULT_PRICE_UPPER_X96,
             DEFAULT_PRICE_LOWER_X96
         );

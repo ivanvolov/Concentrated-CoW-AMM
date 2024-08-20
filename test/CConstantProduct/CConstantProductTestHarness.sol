@@ -42,12 +42,18 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         keccak256(bytes("domain separator hash"));
     bytes DEFAULT_PRICE_ORACLE_DATA = bytes("some price oracle data");
 
+    uint160 DEFAULT_PRICE_UPPER_X96 =
+        V3MathLib.getSqrtPriceFromPrice(5500 ether);
+    uint160 DEFAULT_PRICE_LOWER_X96 =
+        V3MathLib.getSqrtPriceFromPrice(4545 ether);
+
     uint160 DEFAULT_PRICE_CURRENT_X96 =
         V3MathLib.getSqrtPriceFromPrice(5000 ether);
-
     uint160 DEFAULT_NEW_PRICE_X96 = V3MathLib.getSqrtPriceFromPrice(4565 ether);
     uint160 DEFAULT_NEW_PRICE_OTHER_SIDE_X96 =
         V3MathLib.getSqrtPriceFromPrice(5499 ether);
+
+    uint128 DEFAULT_LIQUIDITY = 1518129116516325613903;
 
     ISettlement internal solutionSettler =
         ISettlement(DEFAULT_SOLUTION_SETTLER);
