@@ -146,6 +146,9 @@ contract CConstantProductFactory {
                 liquidity
             );
         deposit(amm, amount0, amount1);
+        console.log("> Deposited");
+        console.log("> Amount0: %s", amount0);
+        console.log("> Amount1: %s", amount1);
         return
             CConstantProduct.TradingParams({
                 minTradedToken0: minTradedToken0,
