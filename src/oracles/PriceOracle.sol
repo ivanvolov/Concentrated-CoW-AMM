@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {ICPriceOracle} from "../interfaces/ICPriceOracle.sol";
 
-import {TickMath} from "@forks/uniswap-v3/TickMath.sol";
+import {TickMath} from "@forks/uniswap-v4/TickMath.sol";
 import {OracleLibrary} from "@forks/uniswap-v3/OracleLibrary.sol";
 
 /**
@@ -38,6 +38,6 @@ contract PriceOracle is ICPriceOracle {
 
         //TODO: add token check with pool tokens
 
-        return TickMath.getSqrtRatioAtTick(arithmeticMeanTick);
+        return TickMath.getSqrtPriceAtTick(arithmeticMeanTick);
     }
 }

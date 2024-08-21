@@ -6,8 +6,8 @@ import "forge-std/console.sol";
 import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
 import {FixedPointMathLib} from "@src/libraries/math/FixedPointMathLib.sol";
 import {IUniswapV3Pool} from "@forks/uniswap-v3/IUniswapV3Pool.sol";
-import {TickMath} from "@forks/uniswap-v3/TickMath.sol";
-import {LiquidityAmounts} from "@forks/uniswap-v3/LiquidityAmounts.sol";
+import {TickMath} from "@forks/uniswap-v4/TickMath.sol";
+import {LiquidityAmounts} from "@forks/uniswap-v4/LiquidityAmounts.sol";
 
 library CMathLib {
     using FixedPointMathLib for uint256;
@@ -141,7 +141,7 @@ library CMathLib {
     }
 
     function getSqrtPriceAtTick(int24 tick) internal pure returns (uint160) {
-        return TickMath.getSqrtRatioAtTick(tick);
+        return TickMath.getSqrtPriceAtTick(tick);
     }
 
     function toInt24(int256 value) internal pure returns (int24) {
