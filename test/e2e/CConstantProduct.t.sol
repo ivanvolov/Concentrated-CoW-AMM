@@ -7,13 +7,11 @@ import {CConstantProduct, IERC20, GPv2Order, ISettlement} from "src/CConstantPro
 import {CConstantProductFactory, IConditionalOrder} from "src/CConstantProductFactory.sol";
 import {PriceOracle} from "src/oracles/PriceOracle.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
-import {UniswapV2Helper, IUniswapV2Factory} from "test/libraries/UniswapV2Helper.sol";
 
 import {ICPriceOracle} from "src/interfaces/ICPriceOracle.sol";
 import {CMathLib} from "src/libraries/CMathLib.sol";
 
 abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
-    using UniswapV2Helper for IUniswapV2Factory;
     using GPv2Order for GPv2Order.Data;
 
     bytes DEFAULT_PRICE_ORACLE_DATA = bytes("some price oracle data");

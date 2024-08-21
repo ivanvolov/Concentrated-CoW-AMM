@@ -5,9 +5,6 @@ import "forge-std/console.sol";
 import {Test} from "forge-std/Test.sol";
 
 import {CMathLib} from "@src/libraries/CMathLib.sol";
-import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
-import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
-import {TickMath} from "@v4-core/libraries/TickMath.sol";
 
 contract CMathLibTest is Test {
     struct LP {

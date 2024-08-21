@@ -4,11 +4,6 @@ pragma solidity ^0.8.24;
 import "forge-std/console.sol";
 import {Test} from "forge-std/Test.sol";
 
-import {CMathLib} from "@src/libraries/CMathLib.sol";
-import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
-import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
-import {TickMath} from "@v4-core/libraries/TickMath.sol";
-
 import {IUniswapV3Factory} from "@forks/uniswap-v3/IUniswapV3Factory.sol";
 import {PriceOracle} from "src/oracles/PriceOracle.sol";
 import {OracleLibrary} from "@forks/uniswap-v3/OracleLibrary.sol";
