@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.t.sol";
 
 import {CConstantProduct, GPv2Order, IERC20} from "src/CConstantProduct.sol";
-import {UniswapV3PriceOracle} from "src/oracles/UniswapV3PriceOracle.sol";
+import {PriceOracle} from "src/oracles/PriceOracle.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
 import {V3MathLib} from "src/libraries/V3MathLib.sol";
 
@@ -58,7 +58,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     ISettlement internal solutionSettler =
         ISettlement(DEFAULT_SOLUTION_SETTLER);
     CConstantProduct internal constantProduct;
-    UniswapV3PriceOracle internal uniswapV3PriceOracle;
+    PriceOracle internal priceOracle;
 
     LPFixture defaultLpFixture;
 
@@ -83,7 +83,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             IERC20(USDC),
             IERC20(WETH)
         );
-        uniswapV3PriceOracle = new UniswapV3PriceOracle();
+        priceOracle = new PriceOracle();
     }
 
     function setUpSolutionSettler() internal {
@@ -117,7 +117,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         return
             CConstantProduct.TradingParams(
                 0,
-                uniswapV3PriceOracle,
+                priceOracle,
                 DEFAULT_PRICE_ORACLE_DATA,
                 DEFAULT_APPDATA,
                 V3MathLib.getSqrtPriceFromPrice(defaultLpFixture.currentPrice),
@@ -169,7 +169,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     function setUpDefaultOracleResponse() public {
         setUpOracleResponse(
             DEFAULT_NEW_PRICE_X96,
-            address(uniswapV3PriceOracle),
+            address(priceOracle),
             address(constantProduct.token0()),
             address(constantProduct.token1())
         );
@@ -178,7 +178,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     function setUpDefaultOracleResponseOtherSide() public {
         setUpOracleResponse(
             DEFAULT_NEW_PRICE_OTHER_SIDE_X96,
-            address(uniswapV3PriceOracle),
+            address(priceOracle),
             address(constantProduct.token0()),
             address(constantProduct.token1())
         );

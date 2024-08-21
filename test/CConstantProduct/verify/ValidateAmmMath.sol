@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {CConstantProduct, GPv2Order, IERC20, IConditionalOrder} from "src/CConstantProduct.sol";
-import {UniswapV3PriceOracle} from "src/oracles/UniswapV3PriceOracle.sol";
+import {PriceOracle} from "src/oracles/PriceOracle.sol";
 
 import {CConstantProductTestHarness} from "../CConstantProductTestHarness.sol";
 
@@ -31,8 +31,8 @@ contract ValidateAmmMath is CConstantProductTestHarness {
     //     order.buyAmount = 0;
     //     tradingParams = CConstantProduct.TradingParams(
     //         0,
-    //         uniswapV3PriceOracle,
-    //         abi.encode(abi.encode(UniswapV3PriceOracle.Data(pair))),
+    //         priceOracle,
+    //         abi.encode(abi.encode(PriceOracle.Data(pair))),
     //         order.appData
     //     );
     // }

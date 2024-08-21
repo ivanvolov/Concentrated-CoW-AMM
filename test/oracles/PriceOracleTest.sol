@@ -10,15 +10,15 @@ import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
 import {TickMath} from "@v4-core/libraries/TickMath.sol";
 
 import {IUniswapV3Factory} from "@forks/uniswap-v3/IUniswapV3Factory.sol";
-import {UniswapV3PriceOracle} from "src/oracles/UniswapV3PriceOracle.sol";
+import {PriceOracle} from "src/oracles/PriceOracle.sol";
 import {OracleLibrary} from "@forks/uniswap-v3/OracleLibrary.sol";
 
-contract UniswapV3PriceOracleTest is Test {
+contract PriceOracleTest is Test {
     uint256 mainnetFork;
     string MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
 
     address oracleV3pool;
-    UniswapV3PriceOracle internal oracle;
+    PriceOracle internal oracle;
 
     address private ORACLE_V3_FACTORY =
         0x1F98431c8aD98523631AE4a59f267346ea31F984;
@@ -30,7 +30,7 @@ contract UniswapV3PriceOracleTest is Test {
         vm.selectFork(mainnetFork);
         vm.rollFork(19_955_703);
 
-        oracle = new UniswapV3PriceOracle();
+        oracle = new PriceOracle();
 
         IUniswapV3Factory oracleFactory = IUniswapV3Factory(ORACLE_V3_FACTORY);
         oracleV3pool = oracleFactory.getPool(WETH, USDC, 3000);

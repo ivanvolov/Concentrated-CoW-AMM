@@ -5,7 +5,7 @@ import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.
 
 import {CConstantProduct, IERC20, GPv2Order, ISettlement} from "src/CConstantProduct.sol";
 import {CConstantProductFactory, IConditionalOrder} from "src/CConstantProductFactory.sol";
-import {UniswapV3PriceOracle} from "src/oracles/UniswapV3PriceOracle.sol";
+import {PriceOracle} from "src/oracles/PriceOracle.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
 import {UniswapV2Helper, IUniswapV2Factory} from "test/libraries/UniswapV2Helper.sol";
 
@@ -33,7 +33,7 @@ abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
     IERC20 public DAI;
     IERC20 public WETH;
     CConstantProductFactory ammFactory;
-    UniswapV3PriceOracle uniswapV3PriceOracle;
+    PriceOracle priceOracle;
 
     function setUp() public virtual override(BaseComposableCoWTest) {
         super.setUp();
@@ -42,7 +42,7 @@ abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
         ammFactory = new CConstantProductFactory(
             ISettlement(address(settlement))
         );
-        uniswapV3PriceOracle = new UniswapV3PriceOracle();
+        priceOracle = new PriceOracle();
     }
 
     function testE2ESettle() public {
@@ -64,7 +64,7 @@ abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
 
         setUpOracleResponse(
             DEFAULT_PRICE_CURRENT_X96,
-            address(uniswapV3PriceOracle),
+            address(priceOracle),
             address(DAI),
             address(WETH),
             DEFAULT_PRICE_ORACLE_DATA
@@ -75,7 +75,7 @@ abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
             WETH,
             DEFAULT_LIQUIDITY,
             minTradedToken0,
-            uniswapV3PriceOracle,
+            priceOracle,
             DEFAULT_PRICE_ORACLE_DATA,
             appData,
             DEFAULT_PRICE_UPPER_X96,
@@ -91,7 +91,7 @@ abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
 
         setUpOracleResponse(
             DEFAULT_NEW_PRICE_X96,
-            address(uniswapV3PriceOracle),
+            address(priceOracle),
             address(DAI),
             address(WETH),
             DEFAULT_PRICE_ORACLE_DATA
@@ -100,7 +100,7 @@ abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
         CConstantProduct.TradingParams memory data = CConstantProduct
             .TradingParams({
                 minTradedToken0: minTradedToken0,
-                priceOracle: uniswapV3PriceOracle,
+                priceOracle: priceOracle,
                 priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
                 appData: appData,
                 sqrtPriceCurrentX96: DEFAULT_PRICE_CURRENT_X96, //TODO: rename to not current but initial

@@ -414,19 +414,12 @@ contract CConstantProduct is IERC1271 {
             );
         }
 
-        // TODO: !!!!!!
         // These are the checks needed to satisfy the conditions on in/out
         // amounts for a constant-product curve AMM.
 
         (uint256 sellAmount, uint256 buyAmount, , ) = getTargetAmounts(
             tradingParams
         );
-
-        // console.log("> sellAmount", sellAmount);
-        // console.log("> buyAmount", buyAmount);
-
-        // console.log("> order.sellAmount", order.sellAmount);
-        // console.log("> order.buyAmount", order.buyAmount);
 
         if (!(order.sellAmount <= sellAmount && order.buyAmount >= buyAmount)) {
             revert IConditionalOrder.OrderNotValid("received amount too low");

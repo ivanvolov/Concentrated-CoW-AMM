@@ -13,7 +13,7 @@ import {OracleLibrary} from "@forks/uniswap-v3/OracleLibrary.sol";
  * interface and can be used by a CoW AMM to determine the current price of the
  * traded tokens on specific Uniswap v2 pools.
  */
-contract UniswapV3PriceOracle is ICPriceOracle {
+contract PriceOracle is ICPriceOracle {
     /**
      * Data required by the oracle to determine the current price.
      */
