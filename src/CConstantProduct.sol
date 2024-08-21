@@ -280,9 +280,6 @@ contract CConstantProduct is IERC1271 {
             revertPollAtNextBlock("traded amount too small");
         }
 
-        console.log("> sellAmount", sellAmount);
-        console.log("> buyAmount", buyAmount);
-
         order = GPv2Order.Data(
             sellToken,
             buyToken,
@@ -312,12 +309,10 @@ contract CConstantProduct is IERC1271 {
             token0.balanceOf(address(this)),
             token1.balanceOf(address(this))
         );
-        // console.log("> selfReserve0", selfReserve0);
-        // console.log("> selfReserve1", selfReserve1);
 
         uint160 _sqrtPriceCurrentX96 = sqrtPriceCurrentX96 != 0
             ? sqrtPriceCurrentX96
-            : tradingParams.sqrtPriceCurrentX96;
+            : tradingParams.sqrtPriceCurrentX96; //TODO: fix this
 
         uint128 liquidity = CMathLib.getLiquidityFromAmountsSqrtPriceX96(
             _sqrtPriceCurrentX96,
@@ -326,9 +321,6 @@ contract CConstantProduct is IERC1271 {
             selfReserve0,
             selfReserve1
         );
-        console.log("> liquidity", liquidity);
-        // console.log("> targetSqrtPriceX96", targetSqrtPriceX96);
-        // console.log("> sqrtPriceCurrentX96", _sqrtPriceCurrentX96);
 
         (uint256 newAmount0, uint256 newAmount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
@@ -337,8 +329,6 @@ contract CConstantProduct is IERC1271 {
                 tradingParams.sqrtPriceBX96,
                 liquidity
             );
-        console.log("> newAmount0", newAmount0);
-        console.log("> newAmount1", newAmount1);
 
         if (targetSqrtPriceX96 > _sqrtPriceCurrentX96) {
             // sell token0 for token1
