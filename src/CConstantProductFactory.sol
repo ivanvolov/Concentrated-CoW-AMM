@@ -7,7 +7,7 @@ import {ComposableCoW, IConditionalOrder} from "lib/composable-cow/src/Composabl
 import {SafeERC20} from "lib/openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {CConstantProduct, IERC20, OZIERC20, ISettlement, GPv2Order, ICPriceOracle} from "./CConstantProduct.sol";
-import {V3MathLib} from "./libraries/V3MathLib.sol";
+import {CMathLib} from "./libraries/CMathLib.sol";
 
 /**
  * @title CoW AMM Factory
@@ -138,7 +138,7 @@ contract CConstantProductFactory {
             address(amm.token1()),
             priceOracleData
         );
-        (uint256 amount0, uint256 amount1) = V3MathLib
+        (uint256 amount0, uint256 amount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
                 currentSqrtPriceX96,
                 sqrtPriceAX96,

@@ -10,7 +10,7 @@ import {ISettlement} from "src/interfaces/ISettlement.sol";
 import {UniswapV2Helper, IUniswapV2Factory} from "test/libraries/UniswapV2Helper.sol";
 
 import {ICPriceOracle} from "src/interfaces/ICPriceOracle.sol";
-import {V3MathLib} from "src/libraries/V3MathLib.sol";
+import {CMathLib} from "src/libraries/CMathLib.sol";
 
 abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
     using UniswapV2Helper for IUniswapV2Factory;
@@ -19,13 +19,13 @@ abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
     bytes DEFAULT_PRICE_ORACLE_DATA = bytes("some price oracle data");
 
     uint160 DEFAULT_PRICE_UPPER_X96 =
-        V3MathLib.getSqrtPriceFromPrice(5500 ether);
+        CMathLib.getSqrtPriceFromPrice(5500 ether);
     uint160 DEFAULT_PRICE_LOWER_X96 =
-        V3MathLib.getSqrtPriceFromPrice(4545 ether);
+        CMathLib.getSqrtPriceFromPrice(4545 ether);
 
     uint160 DEFAULT_PRICE_CURRENT_X96 =
-        V3MathLib.getSqrtPriceFromPrice(5000 ether);
-    uint160 DEFAULT_NEW_PRICE_X96 = V3MathLib.getSqrtPriceFromPrice(4565 ether);
+        CMathLib.getSqrtPriceFromPrice(5000 ether);
+    uint160 DEFAULT_NEW_PRICE_X96 = CMathLib.getSqrtPriceFromPrice(4565 ether);
 
     uint128 DEFAULT_LIQUIDITY = 1518129116516325613903;
 

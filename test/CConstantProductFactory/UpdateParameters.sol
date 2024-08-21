@@ -5,7 +5,7 @@ import {ICPriceOracle, CConstantProduct, CConstantProductFactory, ComposableCoW,
 
 import {CConstantProductFactoryTestHarness} from "./CConstantProductFactoryTestHarness.sol";
 
-import {V3MathLib} from "src/libraries/V3MathLib.sol";
+import {CMathLib} from "src/libraries/CMathLib.sol";
 
 abstract contract UpdateParameters is CConstantProductFactoryTestHarness {
     uint256 private initMinTradedToken0 = 42;

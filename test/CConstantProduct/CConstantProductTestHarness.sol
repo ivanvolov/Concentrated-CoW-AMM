@@ -8,7 +8,7 @@ import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.
 import {CConstantProduct, GPv2Order, IERC20} from "src/CConstantProduct.sol";
 import {PriceOracle} from "src/oracles/PriceOracle.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
-import {V3MathLib} from "src/libraries/V3MathLib.sol";
+import {CMathLib} from "src/libraries/CMathLib.sol";
 
 import {ICPriceOracle} from "src/interfaces/ICPriceOracle.sol";
 
@@ -43,15 +43,15 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     bytes DEFAULT_PRICE_ORACLE_DATA = bytes("some price oracle data");
 
     uint160 DEFAULT_PRICE_UPPER_X96 =
-        V3MathLib.getSqrtPriceFromPrice(5500 ether);
+        CMathLib.getSqrtPriceFromPrice(5500 ether);
     uint160 DEFAULT_PRICE_LOWER_X96 =
-        V3MathLib.getSqrtPriceFromPrice(4545 ether);
+        CMathLib.getSqrtPriceFromPrice(4545 ether);
 
     uint160 DEFAULT_PRICE_CURRENT_X96 =
-        V3MathLib.getSqrtPriceFromPrice(5000 ether);
-    uint160 DEFAULT_NEW_PRICE_X96 = V3MathLib.getSqrtPriceFromPrice(4565 ether);
+        CMathLib.getSqrtPriceFromPrice(5000 ether);
+    uint160 DEFAULT_NEW_PRICE_X96 = CMathLib.getSqrtPriceFromPrice(4565 ether);
     uint160 DEFAULT_NEW_PRICE_OTHER_SIDE_X96 =
-        V3MathLib.getSqrtPriceFromPrice(5499 ether);
+        CMathLib.getSqrtPriceFromPrice(5499 ether);
 
     uint128 DEFAULT_LIQUIDITY = 1518129116516325613903;
 
@@ -120,9 +120,9 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
                 priceOracle,
                 DEFAULT_PRICE_ORACLE_DATA,
                 DEFAULT_APPDATA,
-                V3MathLib.getSqrtPriceFromPrice(defaultLpFixture.currentPrice),
-                V3MathLib.getSqrtPriceFromPrice(defaultLpFixture.priceLower),
-                V3MathLib.getSqrtPriceFromPrice(defaultLpFixture.priceUpper)
+                CMathLib.getSqrtPriceFromPrice(defaultLpFixture.currentPrice),
+                CMathLib.getSqrtPriceFromPrice(defaultLpFixture.priceLower),
+                CMathLib.getSqrtPriceFromPrice(defaultLpFixture.priceUpper)
             );
     }
 
@@ -320,7 +320,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     function calculateProvideLiquidity(
         LPFixture memory lpFixture
     ) internal pure returns (uint128, uint256, uint256) {
-        uint128 _liquidity = V3MathLib.getLiquidityFromAmountsPrice(
+        uint128 _liquidity = CMathLib.getLiquidityFromAmountsPrice(
             lpFixture.currentPrice,
             lpFixture.priceLower,
             lpFixture.priceUpper,
@@ -328,11 +328,11 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             lpFixture.amount1
         );
 
-        (uint256 _amount0, uint256 _amount1) = V3MathLib
+        (uint256 _amount0, uint256 _amount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
-                V3MathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
-                V3MathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
-                V3MathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
+                CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
+                CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
+                CMathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
                 _liquidity
             );
         return (_liquidity, _amount0, _amount1);

@@ -10,7 +10,7 @@ import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
 import {FixedPointMathLib} from "@src/libraries/math/FixedPointMathLib.sol";
 import {IUniswapV3Pool} from "@forks/uniswap-v3/IUniswapV3Pool.sol";
 
-library V3MathLib {
+library CLAmmMathLib {
     using FixedPointMathLib for uint256;
 
     function getSwapAmountsFromAmount0(
@@ -138,7 +138,7 @@ library V3MathLib {
     function getSqrtPriceFromPrice(
         uint256 price
     ) internal pure returns (uint160) {
-        return getSqrtPriceAtTick(V3MathLib.getTickFromPrice(price));
+        return getSqrtPriceAtTick(CLAmmMathLib.getTickFromPrice(price));
     }
 
     function getSqrtPriceAtTick(int24 tick) internal pure returns (uint160) {

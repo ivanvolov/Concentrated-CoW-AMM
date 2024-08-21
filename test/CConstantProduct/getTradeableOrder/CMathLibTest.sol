@@ -4,12 +4,12 @@ pragma solidity ^0.8.24;
 import "forge-std/console.sol";
 import {Test} from "forge-std/Test.sol";
 
-import {V3MathLib} from "@src/libraries/V3MathLib.sol";
+import {CMathLib} from "@src/libraries/CMathLib.sol";
 import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
 import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
 import {TickMath} from "@v4-core/libraries/TickMath.sol";
 
-contract V3MathLibTest is Test {
+contract CMathLibTest is Test {
     struct LP {
         uint256 currentPrice;
         uint256 priceUpper;
@@ -34,25 +34,25 @@ contract V3MathLibTest is Test {
     }
 
     function test_uniswapV3_math_tick_and_prices() public {
-        int24 tickLower = V3MathLib.getTickFromPrice(4545 ether);
-        int24 tickCurrent = V3MathLib.getTickFromPrice(5000 ether);
-        int24 tickUpper = V3MathLib.getTickFromPrice(5500 ether);
+        int24 tickLower = CMathLib.getTickFromPrice(4545 ether);
+        int24 tickCurrent = CMathLib.getTickFromPrice(5000 ether);
+        int24 tickUpper = CMathLib.getTickFromPrice(5500 ether);
 
         assertEq(tickLower, 84222);
         assertEq(tickCurrent, 85176);
         assertEq(tickUpper, 86129);
 
-        uint160 sqrtPriceLower = V3MathLib.getSqrtPriceAtTick(tickLower);
-        uint160 sqrtPriceCurrent = V3MathLib.getSqrtPriceAtTick(tickCurrent);
-        uint160 sqrtPriceUpper = V3MathLib.getSqrtPriceAtTick(tickUpper);
+        uint160 sqrtPriceLower = CMathLib.getSqrtPriceAtTick(tickLower);
+        uint160 sqrtPriceCurrent = CMathLib.getSqrtPriceAtTick(tickCurrent);
+        uint160 sqrtPriceUpper = CMathLib.getSqrtPriceAtTick(tickUpper);
 
         assertEq(sqrtPriceLower, 5341283623238412454227108479223);
         assertEq(sqrtPriceCurrent, 5602223755577321903022134995689);
         assertEq(sqrtPriceUpper, 5875617940067453351001625213169);
 
-        sqrtPriceLower = V3MathLib.getSqrtPriceFromPrice(4545 ether);
-        sqrtPriceCurrent = V3MathLib.getSqrtPriceFromPrice(5000 ether);
-        sqrtPriceUpper = V3MathLib.getSqrtPriceFromPrice(5500 ether);
+        sqrtPriceLower = CMathLib.getSqrtPriceFromPrice(4545 ether);
+        sqrtPriceCurrent = CMathLib.getSqrtPriceFromPrice(5000 ether);
+        sqrtPriceUpper = CMathLib.getSqrtPriceFromPrice(5500 ether);
 
         assertEq(sqrtPriceLower, 5341283623238412454227108479223);
         assertEq(sqrtPriceCurrent, 5602223755577321903022134995689);
@@ -71,9 +71,9 @@ contract V3MathLibTest is Test {
         (liquidity, , ) = _provideLiquidity(lp);
 
         uint256 swapAmount0 = 8396874645169942;
-        (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
+        (uint256 amount0Swap, uint256 amount1Swap) = CMathLib
             .getSwapAmountsFromAmount0(
-                V3MathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                CMathLib.getSqrtPriceFromPrice(lp.currentPrice),
                 liquidity,
                 swapAmount0
             );
@@ -85,9 +85,9 @@ contract V3MathLibTest is Test {
     function test_uniswapV3_math_swap_amount0_full_range() public {
         (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
 
-        (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
+        (uint256 amount0Swap, uint256 amount1Swap) = CMathLib
             .getSwapAmountsFromAmount0(
-                V3MathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                CMathLib.getSqrtPriceFromPrice(lp.currentPrice),
                 liquidity,
                 amount0Provided
             );
@@ -103,9 +103,9 @@ contract V3MathLibTest is Test {
         (liquidity, , ) = _provideLiquidity(lp);
 
         uint256 swapAmount1 = 42 ether;
-        (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
+        (uint256 amount0Swap, uint256 amount1Swap) = CMathLib
             .getSwapAmountsFromAmount1(
-                V3MathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                CMathLib.getSqrtPriceFromPrice(lp.currentPrice),
                 liquidity,
                 swapAmount1
             );
@@ -117,9 +117,9 @@ contract V3MathLibTest is Test {
     function test_uniswapV3_math_swap_amount1_full_range() public {
         (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
 
-        (uint256 amount0Swap, uint256 amount1Swap) = V3MathLib
+        (uint256 amount0Swap, uint256 amount1Swap) = CMathLib
             .getSwapAmountsFromAmount1(
-                V3MathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                CMathLib.getSqrtPriceFromPrice(lp.currentPrice),
                 liquidity,
                 amount1Provided
             );
@@ -135,14 +135,14 @@ contract V3MathLibTest is Test {
         (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
         assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
 
-        uint160 newSqrtPriceX96 = V3MathLib.getSqrtPriceFromPrice(4565 ether);
+        uint160 newSqrtPriceX96 = CMathLib.getSqrtPriceFromPrice(4565 ether);
         assertEq(newSqrtPriceX96, 5352779161536754564491933729506);
 
-        (uint256 newAmount0, uint256 newAmount1) = V3MathLib
+        (uint256 newAmount0, uint256 newAmount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
                 newSqrtPriceX96,
-                V3MathLib.getSqrtPriceFromPrice(lp.priceUpper),
-                V3MathLib.getSqrtPriceFromPrice(lp.priceLower),
+                CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
+                CMathLib.getSqrtPriceFromPrice(lp.priceLower),
                 liquidity
             );
 
@@ -158,24 +158,23 @@ contract V3MathLibTest is Test {
         (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
         assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
 
-        (uint256 newAmount0, uint256 newAmount1) = V3MathLib
+        (uint256 newAmount0, uint256 newAmount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
-                V3MathLib.getSqrtPriceFromPrice(5550 ether),
-                V3MathLib.getSqrtPriceFromPrice(lp.priceUpper),
-                V3MathLib.getSqrtPriceFromPrice(lp.priceLower),
+                CMathLib.getSqrtPriceFromPrice(5550 ether),
+                CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
+                CMathLib.getSqrtPriceFromPrice(lp.priceLower),
                 liquidity
             );
 
         assertEq(newAmount0, 0);
         assertEq(newAmount1, 10238638112880364775103);
 
-        (newAmount0, newAmount1) = V3MathLib
-            .getAmountsFromLiquiditySqrtPriceX96(
-                V3MathLib.getSqrtPriceFromPrice(6000 ether),
-                V3MathLib.getSqrtPriceFromPrice(lp.priceUpper),
-                V3MathLib.getSqrtPriceFromPrice(lp.priceLower),
-                liquidity
-            );
+        (newAmount0, newAmount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
+            CMathLib.getSqrtPriceFromPrice(6000 ether),
+            CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
+            CMathLib.getSqrtPriceFromPrice(lp.priceLower),
+            liquidity
+        );
 
         assertEq(newAmount0, 0);
         assertEq(newAmount1, 10238638112880364775103);
@@ -185,14 +184,14 @@ contract V3MathLibTest is Test {
         (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
         assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
 
-        uint160 newSqrtPriceX96 = V3MathLib.getSqrtPriceFromPrice(5499 ether);
+        uint160 newSqrtPriceX96 = CMathLib.getSqrtPriceFromPrice(5499 ether);
         assertEq(newSqrtPriceX96, 5875030437023750975904034809688);
 
-        (uint256 newAmount0, uint256 newAmount1) = V3MathLib
+        (uint256 newAmount0, uint256 newAmount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
                 newSqrtPriceX96,
-                V3MathLib.getSqrtPriceFromPrice(lp.priceUpper),
-                V3MathLib.getSqrtPriceFromPrice(lp.priceLower),
+                CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
+                CMathLib.getSqrtPriceFromPrice(lp.priceLower),
                 liquidity
             );
 
@@ -209,7 +208,7 @@ contract V3MathLibTest is Test {
     function _provideLiquidity(
         LP memory lpFixture
     ) internal pure returns (uint128, uint256, uint256) {
-        uint128 _liquidity = V3MathLib.getLiquidityFromAmountsPrice(
+        uint128 _liquidity = CMathLib.getLiquidityFromAmountsPrice(
             lpFixture.currentPrice,
             lpFixture.priceLower,
             lpFixture.priceUpper,
@@ -217,11 +216,11 @@ contract V3MathLibTest is Test {
             lpFixture.amount1
         );
 
-        (uint256 _amount0, uint256 _amount1) = V3MathLib
+        (uint256 _amount0, uint256 _amount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
-                V3MathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
-                V3MathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
-                V3MathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
+                CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
+                CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
+                CMathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
                 _liquidity
             );
         return (_liquidity, _amount0, _amount1);

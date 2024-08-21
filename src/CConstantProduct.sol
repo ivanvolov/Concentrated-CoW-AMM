@@ -14,7 +14,7 @@ import {ICPriceOracle} from "./interfaces/ICPriceOracle.sol";
 import {ISettlement} from "./interfaces/ISettlement.sol";
 import {IWatchtowerCustomErrors} from "./interfaces/IWatchtowerCustomErrors.sol";
 
-import {V3MathLib} from "./libraries/V3MathLib.sol";
+import {CMathLib} from "./libraries/CMathLib.sol";
 
 /**
  * @title CoW AMM
@@ -319,7 +319,7 @@ contract CConstantProduct is IERC1271 {
             ? sqrtPriceCurrentX96
             : tradingParams.sqrtPriceCurrentX96;
 
-        uint128 liquidity = V3MathLib.getLiquidityFromAmountsSqrtPriceX96(
+        uint128 liquidity = CMathLib.getLiquidityFromAmountsSqrtPriceX96(
             _sqrtPriceCurrentX96,
             tradingParams.sqrtPriceAX96,
             tradingParams.sqrtPriceBX96,
@@ -330,7 +330,7 @@ contract CConstantProduct is IERC1271 {
         // console.log("> targetSqrtPriceX96", targetSqrtPriceX96);
         // console.log("> sqrtPriceCurrentX96", _sqrtPriceCurrentX96);
 
-        (uint256 newAmount0, uint256 newAmount1) = V3MathLib
+        (uint256 newAmount0, uint256 newAmount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
                 targetSqrtPriceX96,
                 tradingParams.sqrtPriceAX96,

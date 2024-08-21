@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import "forge-std/console.sol";
 import {Test} from "forge-std/Test.sol";
 
-import {V3MathLib} from "@src/libraries/V3MathLib.sol";
+import {CMathLib} from "@src/libraries/CMathLib.sol";
 import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
 import {LiquidityAmounts} from "@v4-core-test/utils/LiquidityAmounts.sol";
 import {TickMath} from "@v4-core/libraries/TickMath.sol";

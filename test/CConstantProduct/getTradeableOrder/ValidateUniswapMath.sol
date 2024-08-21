@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 import {CConstantProduct, GPv2Order} from "src/CConstantProduct.sol";
 
 import {CConstantProductTestHarness} from "../CConstantProductTestHarness.sol";
-import {V3MathLib} from "src/libraries/V3MathLib.sol";
+import {CMathLib} from "src/libraries/CMathLib.sol";
 
 abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
     function testReturnedTradeValues() public {
