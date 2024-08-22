@@ -1,4 +1,6 @@
 ta:
 	clear && forge test -vvv --no-match-test "fork|[fF]uzz"
 t:
-	clear && forge test -vv --match-contract E2EConditionalOrderTest --match-test "testE2ESettle"
+	clear && forge test -vvvv --match-contract CCConstantProduct --match-test "testDefaultDoesNotRevert"
+t2:
+	clear && forge test -vvvv --match-contract CCConstantProduct --match-test "testReturnedTradeValues"

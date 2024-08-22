@@ -231,8 +231,8 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
                 IERC20(USDC), // IERC20 sellToken;
                 IERC20(WETH), // IERC20 buyToken;
                 GPv2Order.RECEIVER_SAME_AS_OWNER, // address receiver;
-                477972843434808090039, // uint256 sellAmount;
-                100051271662990918, // uint256 buyAmount;
+                4779728434348080898426, // uint256 sellAmount;
+                1000512716629909196, // uint256 buyAmount;
                 uint32(block.timestamp) +
                     constantProduct.MAX_ORDER_DURATION() /
                     2, // uint32 validTo;
@@ -310,7 +310,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             DEFAULT_PRICE_UPPER_X96,
             DEFAULT_PRICE_LOWER_X96,
             1 ether,
-            500 ether
+            5000 ether
         );
 
         (uint256 _amount0, uint256 _amount1) = CMathLib
