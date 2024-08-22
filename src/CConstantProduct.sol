@@ -47,7 +47,7 @@ contract CConstantProduct is IERC1271 {
         uint160 sqrtPriceLowerX96;
     }
 
-    uint160 lastSqrtPriceX96;
+    uint160 public lastSqrtPriceX96;
 
     /**
      * @notice The largest possible duration of any AMM order, starting from the
