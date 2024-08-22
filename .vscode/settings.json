@@ -1,27 +1,13 @@
 {
   "files.exclude": {
-    // "**/node_modules": true,
-    // "**/artifacts": true,
-    
-    // "**/external": true,
-    // "**/.vscode": true,
-    // "**/cspell.dict": true,
     "**/out": true,
-    "**/docs": true,
-    "**/dev": true,
-    // "**/lib": true,
-    "**/.devcontainer": true,
     "**/cache": true,
-    "**/broadcast": true,
-    "**/audit": true,
-    "**/.github": true,
     "**/.git": true
   },
   "search.exclude": {
-    // "**/node_modules": true,
-    // "**/out": true,
+    "**/out": true,
     "**/.git": true,
-    // "**/lib": true
+    "**/lib": true
   },
   "cSpell.enabled": true
 }
