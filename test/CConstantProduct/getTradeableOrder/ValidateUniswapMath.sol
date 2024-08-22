@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import "forge-std/console.sol";
-
 import {CConstantProduct, GPv2Order} from "src/CConstantProduct.sol";
-
 import {CConstantProductTestHarness} from "../CConstantProductTestHarness.sol";
 import {CMathLib} from "src/libraries/CMathLib.sol";
 

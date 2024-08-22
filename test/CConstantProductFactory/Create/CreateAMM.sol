@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import "forge-std/console.sol";
-
 import {IERC20, ICPriceOracle, CConstantProduct, CConstantProductFactory, ComposableCoW, IConditionalOrder} from "src/CConstantProductFactory.sol";
-
 import {CConstantProductFactoryTestHarness} from "../CConstantProductFactoryTestHarness.sol";
-
 import {CMathLib} from "src/libraries/CMathLib.sol";
 
 abstract contract CreateAMM is CConstantProductFactoryTestHarness {

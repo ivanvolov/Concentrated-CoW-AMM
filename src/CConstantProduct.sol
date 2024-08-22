@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import "forge-std/console.sol";
-
 import {IERC20 as OZIERC20} from "lib/openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC1271} from "lib/openzeppelin/contracts/interfaces/IERC1271.sol";
 import {SafeERC20} from "lib/openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Math} from "lib/openzeppelin/contracts/utils/math/Math.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "lib/composable-cow/src/types/ConditionalOrdersUtilsLib.sol";
 import {IConditionalOrder, GPv2Order, IERC20} from "lib/composable-cow/src/BaseConditionalOrder.sol";
-
 import {ICPriceOracle} from "./interfaces/ICPriceOracle.sol";
 import {ISettlement} from "./interfaces/ISettlement.sol";
 import {IWatchtowerCustomErrors} from "./interfaces/IWatchtowerCustomErrors.sol";
-
 import {CMathLib} from "./libraries/CMathLib.sol";
 
 /**
@@ -429,11 +425,6 @@ contract CConstantProduct is IERC1271 {
         (uint256 sellAmount, uint256 buyAmount, , ) = getTargetAmounts(
             tradingParams
         );
-
-        console.log("> sellAmount", sellAmount);
-        console.log("> order.sell", order.sellAmount);
-        console.log("> buyAmount", buyAmount);
-        console.log("> order.buy", order.buyAmount);
 
         if (!(order.sellAmount <= sellAmount && order.buyAmount >= buyAmount)) {
             revert IConditionalOrder.OrderNotValid("received amount too low");

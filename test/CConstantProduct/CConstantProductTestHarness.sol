@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import "forge-std/console.sol";
-
 import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.t.sol";
-
 import {CConstantProduct, GPv2Order, IERC20} from "src/CConstantProduct.sol";
 import {PriceOracle} from "src/oracles/PriceOracle.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
 import {CMathLib} from "src/libraries/CMathLib.sol";
-
 import {ICPriceOracle} from "src/interfaces/ICPriceOracle.sol";
 
 abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
@@ -212,7 +208,6 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         CConstantProduct.TradingParams memory tradingParams
     ) internal view returns (GPv2Order.Data memory order) {
         order = constantProduct.getTradeableOrder(tradingParams);
-        console.log("> order", order.sellAmount);
         constantProduct.verify(tradingParams, order);
     }
 
