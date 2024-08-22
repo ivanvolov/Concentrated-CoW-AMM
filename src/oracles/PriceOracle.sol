@@ -8,11 +8,11 @@ import {OracleLibrary} from "@forks/uniswap-v3/libraries/OracleLibrary.sol";
 import {IUniswapV3Pool} from "@forks/uniswap-v3/interfaces/IUniswapV3Pool.sol";
 
 /**
- * @title CoW AMM UniswapV3 Price Oracle
- * @author CoW Protocol Developers
+ * @title Concentrated CoW AMM UniswapV3 Price Oracle
+ * @author IVikkk
  * @dev This contract creates an oracle that is compatible with the ICPriceOracle
- * interface and can be used by a CoW AMM to determine the current price of the
- * traded tokens on specific Uniswap v2 pools.
+ * interface and can be used by a Concentrated CoW AMM to determine the current price of the
+ * traded tokens on specific Uniswap v3 pools.
  */
 contract PriceOracle is ICPriceOracle {
     /**

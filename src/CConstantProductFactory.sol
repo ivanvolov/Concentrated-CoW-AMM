@@ -10,10 +10,9 @@ import {CConstantProduct, IERC20, OZIERC20, ISettlement, GPv2Order, ICPriceOracl
 import {CMathLib} from "./libraries/CMathLib.sol";
 
 /**
- * @title CoW AMM Factory
- * @author CoW Protocol Developers
- * @dev Factory contract for the CoW AMM, an automated market maker based on the
- * concept of function-maximising AMMs.
+ * @title Concentrated CoW AMM
+ * @author IVikkk
+ * @dev Factory contract for the Concentrated CoW AMM, an automated market maker based on the concept of function-maximising AMMs & concentrated liquidity.
  * The factory deploys new AMM and is responsible for managing deposits,
  * enabling/disabling trading and updating trade parameters.
  */

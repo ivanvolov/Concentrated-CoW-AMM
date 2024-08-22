@@ -2,9 +2,9 @@
 pragma solidity ^0.8.24;
 
 /**
- * @title CoW AMM Price Oracle Interface
- * @author CoW Protocol Developers
- * @dev A contract that can be used by the CoW AMM as as a price oracle.
+ * @title Concentrated CoW AMM Price Oracle Interface
+ * @author IVikkk
+ * @dev A contract that can be used by the Concentrated CoW AMM as as a price oracle.
  * The price source depends on the actual implementation; it could rely for
  * example on Uniswap, Balancer, Chainlink...
  */

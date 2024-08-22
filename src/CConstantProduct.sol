@@ -17,9 +17,9 @@ import {IWatchtowerCustomErrors} from "./interfaces/IWatchtowerCustomErrors.sol"
 import {CMathLib} from "./libraries/CMathLib.sol";
 
 /**
- * @title CoW AMM
- * @author CoW Protocol Developers
- * @dev Automated market maker based on the concept of function-maximising AMMs.
+ * @title Concentrated CoW AMM
+ * @author IVikkk
+ * @dev Automated market maker based on the concept of function-maximising AMMs & concentrated liquidity.
  * It relies on the CoW Protocol infrastructure to guarantee batch execution of
  * its orders.
  * Order creation and execution is based on the Composable CoW base contracts.
@@ -42,8 +42,11 @@ contract CConstantProduct is IERC1271 {
         /// The app data that must be used in the order.
         /// See `GPv2Order.Data` for more information on the app data.
         bytes32 appData;
-        uint160 sqrtPriceDepositX96; // set as last price of the oracle, will not be updated until order is settled
+        /// The price of the token0 at the moment of the last deposit.
+        uint160 sqrtPriceDepositX96;
+        /// The price upper bound of the AMM.
         uint160 sqrtPriceUpperX96;
+        /// The price lower bound of the AMM.
         uint160 sqrtPriceLowerX96;
     }
 

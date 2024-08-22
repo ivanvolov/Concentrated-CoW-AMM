@@ -9,6 +9,11 @@ import {FixedPointMathLib} from "@src/libraries/math/FixedPointMathLib.sol";
 import {TickMath} from "@forks/uniswap-v3/libraries/TickMath.sol";
 import {LiquidityAmounts} from "@forks/uniswap-v4/LiquidityAmounts.sol";
 
+/**
+ * @title Concentrated Math Library
+ * @author IVikkk
+ * @dev A smart contract library that can be used by the Concentrated CoW AMM as a math library.
+ */
 library CMathLib {
     using FixedPointMathLib for uint256;
 
