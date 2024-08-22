@@ -3,8 +3,9 @@ pragma solidity ^0.8.24;
 
 import {ICPriceOracle} from "../interfaces/ICPriceOracle.sol";
 
-import {TickMath} from "@forks/uniswap-v4/TickMath.sol";
-import {OracleLibrary} from "@forks/uniswap-v3/OracleLibrary.sol";
+import {TickMath} from "@forks/uniswap-v3/libraries/TickMath.sol";
+import {OracleLibrary} from "@forks/uniswap-v3/libraries/OracleLibrary.sol";
+import {IUniswapV3Pool} from "@forks/uniswap-v3/interfaces/IUniswapV3Pool.sol";
 
 /**
  * @title CoW AMM UniswapV3 Price Oracle
@@ -26,8 +27,8 @@ contract PriceOracle is ICPriceOracle {
      * @inheritdoc ICPriceOracle
      */
     function getSqrtPriceX96(
-        address,
-        address,
+        address token0,
+        address token1,
         bytes calldata data
     ) external view returns (uint160 sqrtPriceX96) {
         Data memory oracleData = abi.decode(data, (Data));
@@ -36,8 +37,15 @@ contract PriceOracle is ICPriceOracle {
             oracleData.secondsAgo
         );
 
-        //TODO: add token check with pool tokens
+        require(
+            token0 == IUniswapV3Pool(oracleData.pool).token0(),
+            "oracle: invalid token0"
+        );
+        require(
+            token1 == IUniswapV3Pool(oracleData.pool).token1(),
+            "oracle: invalid token1"
+        );
 
-        return TickMath.getSqrtPriceAtTick(arithmeticMeanTick);
+        return TickMath.getSqrtRatioAtTick(arithmeticMeanTick);
     }
 }

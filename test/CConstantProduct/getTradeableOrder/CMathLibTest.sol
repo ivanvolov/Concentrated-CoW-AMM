@@ -205,10 +205,10 @@ contract CMathLibTest is Test {
     function _provideLiquidity(
         LP memory lpFixture
     ) internal pure returns (uint128, uint256, uint256) {
-        uint128 _liquidity = CMathLib.getLiquidityFromAmountsPrice(
-            lpFixture.currentPrice,
-            lpFixture.priceLower,
-            lpFixture.priceUpper,
+        uint128 _liquidity = CMathLib.getLiquidityFromAmountsSqrtPriceX96(
+            CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
+            CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
+            CMathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
             lpFixture.amount0,
             lpFixture.amount1
         );

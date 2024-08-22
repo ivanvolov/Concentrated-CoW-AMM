@@ -42,13 +42,12 @@ contract CConstantProduct is IERC1271 {
         /// The app data that must be used in the order.
         /// See `GPv2Order.Data` for more information on the app data.
         bytes32 appData;
-        //TODO: think how to do without it
-        uint160 sqrtPriceCurrentX96; // set as last price of the oracle, will not be updated until order is created
-        uint160 sqrtPriceAX96;
-        uint160 sqrtPriceBX96;
+        uint160 sqrtPriceDepositX96; // set as last price of the oracle, will not be updated until order is settled
+        uint160 sqrtPriceUpperX96;
+        uint160 sqrtPriceLowerX96;
     }
 
-    uint160 sqrtPriceCurrentX96; // TODO: I've never seen updating global variables inside cow AMM, is this secure?
+    uint160 lastSqrtPriceX96;
 
     /**
      * @notice The largest possible duration of any AMM order, starting from the
@@ -134,6 +133,12 @@ contract CConstantProduct is IERC1271 {
      * context.
      */
     error CommitOutsideOfSettlement();
+    /**
+     * @notice The `postHook` function can only be called inside a CoW Swap
+     * settlement. This error is thrown when the function is called from another
+     * context.
+     */
+    error PostHookOutsideOfSettlement();
     /**
      * @notice Error thrown when a solver tries to settle an AMM order on CoW
      * Protocol whose hash doesn't match the one that has been committed to.
@@ -296,28 +301,40 @@ contract CConstantProduct is IERC1271 {
         );
     }
 
-    //TODO: maybe remove current price if not needed
-    function getTargetAmounts(
+    function getTargetSqrtPriceX96(
         TradingParams memory tradingParams
-    ) private view returns (uint256, uint256, IERC20, IERC20) {
+    ) private view returns (uint160) {
         uint160 targetSqrtPriceX96 = tradingParams.priceOracle.getSqrtPriceX96(
             address(token0),
             address(token1),
             tradingParams.priceOracleData
         );
+
+        if (targetSqrtPriceX96 > tradingParams.sqrtPriceUpperX96)
+            return tradingParams.sqrtPriceUpperX96;
+        if (targetSqrtPriceX96 < tradingParams.sqrtPriceLowerX96)
+            return tradingParams.sqrtPriceLowerX96;
+        return targetSqrtPriceX96;
+    }
+
+    //TODO: maybe remove current price if not needed
+    function getTargetAmounts(
+        TradingParams memory tradingParams
+    ) private view returns (uint256, uint256, IERC20, IERC20) {
+        uint160 targetSqrtPriceX96 = getTargetSqrtPriceX96(tradingParams);
         (uint256 selfReserve0, uint256 selfReserve1) = (
             token0.balanceOf(address(this)),
             token1.balanceOf(address(this))
         );
 
-        uint160 _sqrtPriceCurrentX96 = sqrtPriceCurrentX96 != 0
-            ? sqrtPriceCurrentX96
-            : tradingParams.sqrtPriceCurrentX96; //TODO: fix this
+        uint160 _lastSqrtPriceX96 = lastSqrtPriceX96 != 0
+            ? lastSqrtPriceX96
+            : tradingParams.sqrtPriceDepositX96;
 
         uint128 liquidity = CMathLib.getLiquidityFromAmountsSqrtPriceX96(
-            _sqrtPriceCurrentX96,
-            tradingParams.sqrtPriceAX96,
-            tradingParams.sqrtPriceBX96,
+            _lastSqrtPriceX96,
+            tradingParams.sqrtPriceUpperX96,
+            tradingParams.sqrtPriceLowerX96,
             selfReserve0,
             selfReserve1
         );
@@ -325,12 +342,12 @@ contract CConstantProduct is IERC1271 {
         (uint256 newAmount0, uint256 newAmount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
                 targetSqrtPriceX96,
-                tradingParams.sqrtPriceAX96,
-                tradingParams.sqrtPriceBX96,
+                tradingParams.sqrtPriceUpperX96,
+                tradingParams.sqrtPriceLowerX96,
                 liquidity
             );
 
-        if (targetSqrtPriceX96 > _sqrtPriceCurrentX96) {
+        if (targetSqrtPriceX96 > _lastSqrtPriceX96) {
             // sell token0 for token1
 
             return (
@@ -411,6 +428,11 @@ contract CConstantProduct is IERC1271 {
             tradingParams
         );
 
+        console.log("> sellAmount", sellAmount);
+        console.log("> order.sell", order.sellAmount);
+        console.log("> buyAmount", buyAmount);
+        console.log("> order.buy", order.buyAmount);
+
         if (!(order.sellAmount <= sellAmount && order.buyAmount >= buyAmount)) {
             revert IConditionalOrder.OrderNotValid("received amount too low");
         }
@@ -426,6 +448,18 @@ contract CConstantProduct is IERC1271 {
         // No checks on:
         // - kind
         // - partiallyFillable
+    }
+
+    function postHook(TradingParams memory tradingParams) public {
+        if (msg.sender != address(solutionSettler)) {
+            revert PostHookOutsideOfSettlement();
+        }
+        if (hash(tradingParams) != tradingParamsHash) {
+            revert TradingParamsDoNotMatchHash();
+        }
+
+        uint160 targetSqrtPriceX96 = getTargetSqrtPriceX96(tradingParams);
+        lastSqrtPriceX96 = targetSqrtPriceX96;
     }
 
     function commitment() public view returns (bytes32 value) {

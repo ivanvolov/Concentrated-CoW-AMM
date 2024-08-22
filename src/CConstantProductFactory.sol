@@ -92,8 +92,8 @@ contract CConstantProductFactory {
         ICPriceOracle priceOracle,
         bytes calldata priceOracleData,
         bytes32 appData,
-        uint160 sqrtPriceAX96,
-        uint160 sqrtPriceBX96
+        uint160 sqrtPriceUpperX96,
+        uint160 sqrtPriceLowerX96
     ) external returns (CConstantProduct amm) {
         address ammOwner = msg.sender;
         amm = new CConstantProduct{salt: salt(ammOwner)}(
@@ -113,8 +113,8 @@ contract CConstantProductFactory {
                 priceOracle,
                 priceOracleData,
                 appData,
-                sqrtPriceAX96,
-                sqrtPriceBX96
+                sqrtPriceUpperX96,
+                sqrtPriceLowerX96
             )
         );
     }
@@ -130,8 +130,8 @@ contract CConstantProductFactory {
         ICPriceOracle priceOracle,
         bytes calldata priceOracleData,
         bytes32 appData,
-        uint160 sqrtPriceAX96,
-        uint160 sqrtPriceBX96
+        uint160 sqrtPriceUpperX96,
+        uint160 sqrtPriceLowerX96
     ) internal returns (CConstantProduct.TradingParams memory data) {
         uint160 currentSqrtPriceX96 = priceOracle.getSqrtPriceX96(
             address(amm.token0()),
@@ -141,23 +141,20 @@ contract CConstantProductFactory {
         (uint256 amount0, uint256 amount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
                 currentSqrtPriceX96,
-                sqrtPriceAX96,
-                sqrtPriceBX96,
+                sqrtPriceUpperX96,
+                sqrtPriceLowerX96,
                 liquidity
             );
         deposit(amm, amount0, amount1);
-        console.log("> Deposited");
-        console.log("> Amount0: %s", amount0);
-        console.log("> Amount1: %s", amount1);
         return
             CConstantProduct.TradingParams({
                 minTradedToken0: minTradedToken0,
                 priceOracle: priceOracle,
                 priceOracleData: priceOracleData,
                 appData: appData,
-                sqrtPriceCurrentX96: currentSqrtPriceX96,
-                sqrtPriceAX96: sqrtPriceAX96,
-                sqrtPriceBX96: sqrtPriceBX96
+                sqrtPriceDepositX96: currentSqrtPriceX96,
+                sqrtPriceUpperX96: sqrtPriceUpperX96,
+                sqrtPriceLowerX96: sqrtPriceLowerX96
             });
     }
 
@@ -178,9 +175,9 @@ contract CConstantProductFactory {
         ICPriceOracle priceOracle,
         bytes calldata priceOracleData,
         bytes32 appData,
-        uint160 sqrtPriceCurrentX96,
-        uint160 sqrtPriceAX96,
-        uint160 sqrtPriceBX96
+        uint160 sqrtPriceDepositX96,
+        uint160 sqrtPriceUpperX96,
+        uint160 sqrtPriceLowerX96
     ) external onlyOwner(amm) {
         CConstantProduct.TradingParams memory data = CConstantProduct
             .TradingParams({
@@ -188,9 +185,9 @@ contract CConstantProductFactory {
                 priceOracle: priceOracle,
                 priceOracleData: priceOracleData,
                 appData: appData,
-                sqrtPriceCurrentX96: sqrtPriceCurrentX96,
-                sqrtPriceAX96: sqrtPriceAX96,
-                sqrtPriceBX96: sqrtPriceBX96
+                sqrtPriceDepositX96: sqrtPriceDepositX96,
+                sqrtPriceUpperX96: sqrtPriceUpperX96,
+                sqrtPriceLowerX96: sqrtPriceLowerX96
             });
         _disableTrading(amm);
         _enableTrading(amm, data);

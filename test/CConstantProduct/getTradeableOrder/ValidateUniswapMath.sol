@@ -13,12 +13,14 @@ abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
         CConstantProduct.TradingParams
             memory defaultTradingParams = setUpDefaultTradingParams();
 
-        (, uint256 oReserve0, uint256 oReserve1) = calculateProvideLiquidity(
-            defaultLpFixture
-        );
+        (
+            ,
+            uint256 oReserve0,
+            uint256 oReserve1
+        ) = calculateProvidedLiquidityDefault();
 
-        assertEq(oReserve0, 998995580131581599);
-        assertEq(oReserve1, 4999999999999999999998);
+        assertEq(oReserve0, 99899558013158159);
+        assertEq(oReserve1, 499999999999999999997);
 
         setUpReserves(address(constantProduct), oReserve0, oReserve1);
 
@@ -31,20 +33,22 @@ abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
         assertEq(address(order.buyToken), address(constantProduct.token0()));
 
         // Assert explicit amounts to see that the trade is reasonable.
-        assertEq(order.sellAmount, 4779728434348080898426);
-        assertEq(order.buyAmount, 1000512716629909196);
+        assertEq(order.sellAmount, 477972843434808090039);
+        assertEq(order.buyAmount, 100051271662990918);
     }
 
     function testReturnedTradeValuesOtherSide() public {
         CConstantProduct.TradingParams
             memory defaultTradingParams = setUpDefaultTradingParams();
 
-        (, uint256 oReserve0, uint256 oReserve1) = calculateProvideLiquidity(
-            defaultLpFixture
-        );
+        (
+            ,
+            uint256 oReserve0,
+            uint256 oReserve1
+        ) = calculateProvidedLiquidityDefault();
 
-        assertEq(oReserve0, 998995580131581599);
-        assertEq(oReserve1, 4999999999999999999998);
+        assertEq(oReserve0, 99899558013158159);
+        assertEq(oReserve1, 499999999999999999997);
 
         setUpReserves(address(constantProduct), oReserve0, oReserve1);
 
@@ -57,7 +61,7 @@ abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
         assertEq(address(order.buyToken), address(constantProduct.token1()));
 
         // Assert explicit amounts to see that the trade is reasonable.
-        assertEq(order.sellAmount, 996948500461190179);
-        assertEq(order.buyAmount, 5227380683092996435572);
+        assertEq(order.sellAmount, 99694850046119017);
+        assertEq(order.buyAmount, 522738068309299634342);
     }
 }

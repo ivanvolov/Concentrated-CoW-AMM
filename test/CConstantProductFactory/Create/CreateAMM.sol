@@ -48,9 +48,9 @@ abstract contract CreateAMM is CConstantProductFactoryTestHarness {
                 priceOracle: defaultPriceOracle,
                 priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
                 appData: defaultAppData,
-                sqrtPriceCurrentX96: DEFAULT_NEW_PRICE_X96,
-                sqrtPriceAX96: DEFAULT_PRICE_UPPER_X96,
-                sqrtPriceBX96: DEFAULT_PRICE_LOWER_X96
+                sqrtPriceDepositX96: DEFAULT_NEW_PRICE_X96,
+                sqrtPriceUpperX96: DEFAULT_PRICE_UPPER_X96,
+                sqrtPriceLowerX96: DEFAULT_PRICE_LOWER_X96
             });
         assertEq(amm.tradingParamsHash(), amm.hash(params));
     }
@@ -88,9 +88,9 @@ abstract contract CreateAMM is CConstantProductFactoryTestHarness {
                 priceOracle: defaultPriceOracle,
                 priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
                 appData: defaultAppData,
-                sqrtPriceCurrentX96: DEFAULT_NEW_PRICE_X96,
-                sqrtPriceAX96: DEFAULT_PRICE_UPPER_X96,
-                sqrtPriceBX96: DEFAULT_PRICE_LOWER_X96
+                sqrtPriceDepositX96: DEFAULT_NEW_PRICE_X96,
+                sqrtPriceUpperX96: DEFAULT_PRICE_UPPER_X96,
+                sqrtPriceLowerX96: DEFAULT_PRICE_LOWER_X96
             });
         assertEq(amm.tradingParamsHash(), amm.hash(params));
     }
@@ -191,9 +191,9 @@ abstract contract CreateAMM is CConstantProductFactoryTestHarness {
                 priceOracle: defaultPriceOracle,
                 priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
                 appData: defaultAppData,
-                sqrtPriceCurrentX96: DEFAULT_NEW_PRICE_X96,
-                sqrtPriceAX96: DEFAULT_PRICE_UPPER_X96,
-                sqrtPriceBX96: DEFAULT_PRICE_LOWER_X96
+                sqrtPriceDepositX96: DEFAULT_NEW_PRICE_X96,
+                sqrtPriceUpperX96: DEFAULT_PRICE_UPPER_X96,
+                sqrtPriceLowerX96: DEFAULT_PRICE_LOWER_X96
             });
         vm.expectEmit();
         emit CConstantProductFactory.Deployed(

@@ -22,14 +22,6 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         bytes signature;
     }
 
-    struct LPFixture {
-        uint256 currentPrice;
-        uint256 priceUpper;
-        uint256 priceLower;
-        uint256 amount0;
-        uint256 amount1;
-    }
-
     address internal vaultRelayer = makeAddr("vault relayer");
     address private USDC = makeAddr("USDC");
     address private WETH = makeAddr("WETH");
@@ -60,18 +52,9 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     CConstantProduct internal constantProduct;
     PriceOracle internal priceOracle;
 
-    LPFixture defaultLpFixture;
-
     function setUp() public virtual override(BaseComposableCoWTest) {
         super.setUp();
 
-        defaultLpFixture = LPFixture({
-            currentPrice: 5000 ether,
-            priceLower: 4545 ether,
-            priceUpper: 5500 ether,
-            amount0: 1 ether,
-            amount1: 5000 ether
-        });
         address constantProductAddress = vm.computeCreateAddress(
             address(this),
             vm.getNonce(address(this))
@@ -120,9 +103,9 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
                 priceOracle,
                 DEFAULT_PRICE_ORACLE_DATA,
                 DEFAULT_APPDATA,
-                CMathLib.getSqrtPriceFromPrice(defaultLpFixture.currentPrice),
-                CMathLib.getSqrtPriceFromPrice(defaultLpFixture.priceLower),
-                CMathLib.getSqrtPriceFromPrice(defaultLpFixture.priceUpper)
+                DEFAULT_PRICE_CURRENT_X96,
+                DEFAULT_PRICE_UPPER_X96,
+                DEFAULT_PRICE_LOWER_X96
             );
     }
 
@@ -144,7 +127,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             ,
             uint256 ownerReserve0,
             uint256 ownerReserve1
-        ) = calculateProvideLiquidity(defaultLpFixture);
+        ) = calculateProvidedLiquidityDefault();
         setUpReserves(owner, ownerReserve0, ownerReserve1);
     }
 
@@ -187,14 +170,14 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     function setUpOracleResponse(
         uint160 newSqrtPriceX96,
         address oracle,
-        address token0,
-        address token1
+        address _token0,
+        address _token1
     ) public {
         vm.mockCall(
             oracle,
             abi.encodeCall(
                 ICPriceOracle.getSqrtPriceX96,
-                (token0, token1, DEFAULT_PRICE_ORACLE_DATA)
+                (_token0, _token1, DEFAULT_PRICE_ORACLE_DATA)
             ),
             abi.encode(newSqrtPriceX96)
         );
@@ -203,15 +186,15 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     function setUpOracleResponse(
         uint160 newSqrtPriceX96,
         address oracle,
-        address token0,
-        address token1,
+        address _token0,
+        address _token1,
         bytes memory priceOracleData
     ) public {
         vm.mockCall(
             oracle,
             abi.encodeCall(
                 ICPriceOracle.getSqrtPriceX96,
-                (token0, token1, priceOracleData)
+                (_token0, _token1, priceOracleData)
             ),
             abi.encode(newSqrtPriceX96)
         );
@@ -248,8 +231,8 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
                 IERC20(USDC), // IERC20 sellToken;
                 IERC20(WETH), // IERC20 buyToken;
                 GPv2Order.RECEIVER_SAME_AS_OWNER, // address receiver;
-                4779728434348080898426, // uint256 sellAmount;
-                1000512716629909196, // uint256 buyAmount;
+                477972843434808090039, // uint256 sellAmount;
+                100051271662990918, // uint256 buyAmount;
                 uint32(block.timestamp) +
                     constantProduct.MAX_ORDER_DURATION() /
                     2, // uint32 validTo;
@@ -317,22 +300,24 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         );
     }
 
-    function calculateProvideLiquidity(
-        LPFixture memory lpFixture
-    ) internal pure returns (uint128, uint256, uint256) {
-        uint128 _liquidity = CMathLib.getLiquidityFromAmountsPrice(
-            lpFixture.currentPrice,
-            lpFixture.priceLower,
-            lpFixture.priceUpper,
-            lpFixture.amount0,
-            lpFixture.amount1
+    function calculateProvidedLiquidityDefault()
+        internal
+        view
+        returns (uint128, uint256, uint256)
+    {
+        uint128 _liquidity = CMathLib.getLiquidityFromAmountsSqrtPriceX96(
+            DEFAULT_PRICE_CURRENT_X96,
+            DEFAULT_PRICE_UPPER_X96,
+            DEFAULT_PRICE_LOWER_X96,
+            1 ether,
+            500 ether
         );
 
         (uint256 _amount0, uint256 _amount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
-                CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
-                CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
-                CMathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
+                DEFAULT_PRICE_CURRENT_X96,
+                DEFAULT_PRICE_UPPER_X96,
+                DEFAULT_PRICE_LOWER_X96,
                 _liquidity
             );
         return (_liquidity, _amount0, _amount1);

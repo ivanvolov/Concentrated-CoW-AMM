@@ -5,8 +5,8 @@ import "forge-std/console.sol";
 
 import {PRBMathUD60x18} from "@src/libraries/math/PRBMathUD60x18.sol";
 import {FixedPointMathLib} from "@src/libraries/math/FixedPointMathLib.sol";
-import {IUniswapV3Pool} from "@forks/uniswap-v3/IUniswapV3Pool.sol";
-import {TickMath} from "@forks/uniswap-v4/TickMath.sol";
+
+import {TickMath} from "@forks/uniswap-v3/libraries/TickMath.sol";
 import {LiquidityAmounts} from "@forks/uniswap-v4/LiquidityAmounts.sol";
 
 library CMathLib {
@@ -16,16 +16,13 @@ library CMathLib {
         uint160 sqrtPriceCurrentX96,
         uint128 liquidity,
         uint256 amount0
-    ) internal view returns (uint256, uint256) {
+    ) internal pure returns (uint256, uint256) {
         uint160 sqrtPriceNextX96 = toUint160(
             uint256(liquidity).mul(uint256(sqrtPriceCurrentX96)).div(
                 uint256(liquidity) +
                     amount0.mul(uint256(sqrtPriceCurrentX96)).div(2 ** 96)
             )
         );
-        console.log(">>sqrtPriceNextX96 (0)", sqrtPriceNextX96);
-        console.log(">>sqrtPriceCurrentX96 ", sqrtPriceCurrentX96);
-        console.log(">>liquidity", liquidity);
 
         return (
             LiquidityAmounts.getAmount0ForLiquidity(
@@ -45,13 +42,9 @@ library CMathLib {
         uint160 sqrtPriceCurrentX96,
         uint128 liquidity,
         uint256 amount1
-    ) internal view returns (uint256, uint256) {
+    ) internal pure returns (uint256, uint256) {
         uint160 sqrtPriceDeltaX96 = toUint160((amount1 * 2 ** 96) / liquidity);
         uint160 sqrtPriceNextX96 = sqrtPriceCurrentX96 + sqrtPriceDeltaX96;
-
-        console.log(">>sqrtPriceNextX96 (1)", sqrtPriceNextX96);
-        console.log(">>sqrtPriceCurrentX96 ", sqrtPriceCurrentX96);
-        console.log(">>liquidity", liquidity);
 
         return (
             LiquidityAmounts.getAmount0ForLiquidity(
@@ -65,12 +58,6 @@ library CMathLib {
                 liquidity
             )
         );
-    }
-
-    function getTokensFromPool(
-        address pool
-    ) external view returns (address token0, address token1) {
-        return (IUniswapV3Pool(pool).token0(), IUniswapV3Pool(pool).token1());
     }
 
     function getLiquidityFromAmountsPrice(
@@ -92,15 +79,15 @@ library CMathLib {
 
     function getLiquidityFromAmountsSqrtPriceX96(
         uint160 sqrtPriceCurrentX96,
-        uint160 sqrtPriceAX96,
-        uint160 sqrtPriceBX96,
+        uint160 sqrtPriceUpperX96,
+        uint160 sqrtPriceLowerX96,
         uint256 amount0,
         uint256 amount1
     ) internal pure returns (uint128) {
         uint256 liquidity = LiquidityAmounts.getLiquidityForAmounts(
             sqrtPriceCurrentX96,
-            sqrtPriceAX96,
-            sqrtPriceBX96,
+            sqrtPriceUpperX96,
+            sqrtPriceLowerX96,
             amount0,
             amount1
         );
@@ -141,7 +128,7 @@ library CMathLib {
     }
 
     function getSqrtPriceAtTick(int24 tick) internal pure returns (uint160) {
-        return TickMath.getSqrtPriceAtTick(tick);
+        return TickMath.getSqrtRatioAtTick(tick);
     }
 
     function toInt24(int256 value) internal pure returns (int24) {

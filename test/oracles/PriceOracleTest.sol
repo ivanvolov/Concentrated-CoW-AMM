@@ -4,9 +4,9 @@ pragma solidity ^0.8.24;
 import "forge-std/console.sol";
 import {Test} from "forge-std/Test.sol";
 
-import {IUniswapV3Factory} from "@forks/uniswap-v3/IUniswapV3Factory.sol";
+import {IUniswapV3Factory} from "@forks/uniswap-v3/interfaces/IUniswapV3Factory.sol";
 import {PriceOracle} from "src/oracles/PriceOracle.sol";
-import {OracleLibrary} from "@forks/uniswap-v3/OracleLibrary.sol";
+import {OracleLibrary} from "@forks/uniswap-v3/libraries/OracleLibrary.sol";
 
 contract PriceOracleTest is Test {
     uint256 mainnetFork;

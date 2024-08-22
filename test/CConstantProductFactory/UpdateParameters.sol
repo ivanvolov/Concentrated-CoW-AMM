@@ -54,9 +54,9 @@ abstract contract UpdateParameters is CConstantProductFactoryTestHarness {
                 priceOracle: newPriceOracle,
                 priceOracleData: newPriceOracleData,
                 appData: newAppData,
-                sqrtPriceCurrentX96: DEFAULT_NEW_PRICE_X96,
-                sqrtPriceAX96: DEFAULT_PRICE_UPPER_X96,
-                sqrtPriceBX96: DEFAULT_PRICE_LOWER_X96
+                sqrtPriceDepositX96: DEFAULT_NEW_PRICE_X96,
+                sqrtPriceUpperX96: DEFAULT_PRICE_UPPER_X96,
+                sqrtPriceLowerX96: DEFAULT_PRICE_LOWER_X96
             });
         bytes32 newParamsHash = amm.hash(params);
         require(amm.tradingParamsHash() != newParamsHash, "bad test setup");
@@ -81,9 +81,9 @@ abstract contract UpdateParameters is CConstantProductFactoryTestHarness {
                 priceOracle: newPriceOracle,
                 priceOracleData: newPriceOracleData,
                 appData: newAppData,
-                sqrtPriceCurrentX96: DEFAULT_NEW_PRICE_X96,
-                sqrtPriceAX96: DEFAULT_PRICE_UPPER_X96,
-                sqrtPriceBX96: DEFAULT_PRICE_LOWER_X96
+                sqrtPriceDepositX96: DEFAULT_NEW_PRICE_X96,
+                sqrtPriceUpperX96: DEFAULT_PRICE_UPPER_X96,
+                sqrtPriceLowerX96: DEFAULT_PRICE_LOWER_X96
             });
         vm.expectEmit();
         emit CConstantProductFactory.TradingDisabled(amm);

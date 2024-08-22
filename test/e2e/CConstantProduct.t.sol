@@ -101,9 +101,9 @@ abstract contract E2EConditionalOrderTest is BaseComposableCoWTest {
                 priceOracle: priceOracle,
                 priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
                 appData: appData,
-                sqrtPriceCurrentX96: DEFAULT_PRICE_CURRENT_X96, //TODO: rename to not current but initial
-                sqrtPriceAX96: DEFAULT_PRICE_UPPER_X96,
-                sqrtPriceBX96: DEFAULT_PRICE_LOWER_X96
+                sqrtPriceDepositX96: DEFAULT_PRICE_CURRENT_X96,
+                sqrtPriceUpperX96: DEFAULT_PRICE_UPPER_X96,
+                sqrtPriceLowerX96: DEFAULT_PRICE_LOWER_X96
             });
         IConditionalOrder.ConditionalOrderParams memory params = super
             .createOrder(
