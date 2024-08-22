@@ -317,7 +317,6 @@ contract CConstantProduct is IERC1271 {
         return targetSqrtPriceX96;
     }
 
-    //TODO: maybe remove current price if not needed
     function getTargetAmounts(
         TradingParams memory tradingParams
     ) private view returns (uint256, uint256, IERC20, IERC20) {

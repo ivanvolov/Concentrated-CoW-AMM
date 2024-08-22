@@ -119,9 +119,8 @@ contract CConstantProductFactory {
         );
     }
 
-    //TODO: optimize this and do it less ugly
     /**
-     * @notice This function is mainly to remove stack to deep errors.
+     * @notice This function is to avoid stack too deep.
      */
     function getDataAndDeposit(
         CConstantProduct amm,

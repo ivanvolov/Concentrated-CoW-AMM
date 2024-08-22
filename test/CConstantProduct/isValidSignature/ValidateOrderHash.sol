@@ -50,7 +50,6 @@ abstract contract ValidateOrderHash is CConstantProductTestHarness {
         constantProduct.enableTrading(data.tradingParams);
 
         // Setup to make the order pass verification
-        setUpDefaultPair();
         setUpDefaultReserves(address(constantProduct));
         setUpDefaultOracleResponse();
 

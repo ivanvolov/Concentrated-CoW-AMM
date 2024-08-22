@@ -87,11 +87,6 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         );
     }
 
-    function setUpDefaultPair() internal {
-        // TODO: remove
-        // @Notice: we don't need it in our oracle simulation case.
-    }
-
     function getDefaultTradingParams()
         internal
         view
@@ -111,9 +106,9 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
 
     function setUpDefaultTradingParams()
         internal
+        view
         returns (CConstantProduct.TradingParams memory)
     {
-        setUpDefaultPair();
         return getDefaultTradingParams();
     }
 
@@ -136,7 +131,6 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         uint256 amount0,
         uint256 amount1
     ) internal {
-        //TODO: maybe rewrite this to Oracle token0 and token1
         vm.mockCall(
             address(constantProduct.token0()),
             abi.encodeCall(IERC20.balanceOf, (owner)),

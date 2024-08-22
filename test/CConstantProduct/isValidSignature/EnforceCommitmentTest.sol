@@ -13,7 +13,6 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         SignatureData memory data = defaultSignatureAndHashes();
         constantProduct.enableTrading(data.tradingParams);
 
-        setUpDefaultPair();
         setUpDefaultReserves(address(constantProduct));
         vm.prank(address(solutionSettler));
         constantProduct.commit(badCommitment);
@@ -27,7 +26,6 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
     }
 
     function testTradeableOrderPassesValidationWithZeroCommit() public {
-        setUpDefaultPair();
         setUpDefaultOracleResponse();
         setUpDefaultReserves(address(constantProduct));
 
@@ -49,7 +47,6 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
     }
 
     function testZeroCommitRevertsForOrdersOtherThanTradeableOrder() public {
-        setUpDefaultPair();
         setUpDefaultOracleResponse();
         setUpDefaultReserves(address(constantProduct));
 
