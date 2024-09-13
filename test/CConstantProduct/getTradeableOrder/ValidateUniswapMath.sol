@@ -7,14 +7,9 @@ import {CMathLib} from "src/libraries/CMathLib.sol";
 
 abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
     function testReturnedTradeValues() public {
-        CConstantProduct.TradingParams
-            memory defaultTradingParams = setUpDefaultTradingParams();
+        CConstantProduct.TradingParams memory defaultTradingParams = setUpDefaultTradingParams();
 
-        (
-            ,
-            uint256 oReserve0,
-            uint256 oReserve1
-        ) = calculateProvidedLiquidityDefault();
+        (, uint256 oReserve0, uint256 oReserve1) = calculateProvidedLiquidityDefault();
 
         assertEq(oReserve0, 998995580131581599);
         assertEq(oReserve1, 4999999999999999999998);
@@ -22,9 +17,7 @@ abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
         setUpReserves(address(constantProduct), oReserve0, oReserve1);
 
         setUpDefaultOracleResponse();
-        GPv2Order.Data memory order = checkedGetTradeableOrder(
-            defaultTradingParams
-        );
+        GPv2Order.Data memory order = checkedGetTradeableOrder(defaultTradingParams);
 
         assertEq(address(order.sellToken), address(constantProduct.token1()));
         assertEq(address(order.buyToken), address(constantProduct.token0()));
@@ -35,14 +28,9 @@ abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
     }
 
     function testReturnedTradeValuesOtherSide() public {
-        CConstantProduct.TradingParams
-            memory defaultTradingParams = setUpDefaultTradingParams();
+        CConstantProduct.TradingParams memory defaultTradingParams = setUpDefaultTradingParams();
 
-        (
-            ,
-            uint256 oReserve0,
-            uint256 oReserve1
-        ) = calculateProvidedLiquidityDefault();
+        (, uint256 oReserve0, uint256 oReserve1) = calculateProvidedLiquidityDefault();
 
         assertEq(oReserve0, 998995580131581599);
         assertEq(oReserve1, 4999999999999999999998);
@@ -50,9 +38,7 @@ abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
         setUpReserves(address(constantProduct), oReserve0, oReserve1);
 
         setUpDefaultOracleResponseOtherSide();
-        GPv2Order.Data memory order = checkedGetTradeableOrder(
-            defaultTradingParams
-        );
+        GPv2Order.Data memory order = checkedGetTradeableOrder(defaultTradingParams);
 
         assertEq(address(order.sellToken), address(constantProduct.token0()));
         assertEq(address(order.buyToken), address(constantProduct.token1()));

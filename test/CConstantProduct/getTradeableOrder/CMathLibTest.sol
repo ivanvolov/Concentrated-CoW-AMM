@@ -69,13 +69,12 @@ contract CMathLibTest is Test {
         uint160 newSqrtPriceX96 = CMathLib.getSqrtPriceFromPrice(4565 ether);
         assertEq(newSqrtPriceX96, 5352779161536754564491933729506);
 
-        (uint256 newAmount0, uint256 newAmount1) = CMathLib
-            .getAmountsFromLiquiditySqrtPriceX96(
-                newSqrtPriceX96,
-                CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
-                CMathLib.getSqrtPriceFromPrice(lp.priceLower),
-                liquidity
-            );
+        (uint256 newAmount0, uint256 newAmount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
+            newSqrtPriceX96,
+            CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
+            CMathLib.getSqrtPriceFromPrice(lp.priceLower),
+            liquidity
+        );
 
         assertEq(amount0Provided, 998995580131581599);
         assertEq(amount1Provided, 4999999999999999999998);
@@ -89,13 +88,12 @@ contract CMathLibTest is Test {
         (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
         assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
 
-        (uint256 newAmount0, uint256 newAmount1) = CMathLib
-            .getAmountsFromLiquiditySqrtPriceX96(
-                CMathLib.getSqrtPriceFromPrice(5550 ether),
-                CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
-                CMathLib.getSqrtPriceFromPrice(lp.priceLower),
-                liquidity
-            );
+        (uint256 newAmount0, uint256 newAmount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
+            CMathLib.getSqrtPriceFromPrice(5550 ether),
+            CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
+            CMathLib.getSqrtPriceFromPrice(lp.priceLower),
+            liquidity
+        );
 
         assertEq(newAmount0, 0);
         assertEq(newAmount1, 10238638112880364775103);
@@ -118,13 +116,12 @@ contract CMathLibTest is Test {
         uint160 newSqrtPriceX96 = CMathLib.getSqrtPriceFromPrice(5499 ether);
         assertEq(newSqrtPriceX96, 5875030437023750975904034809688);
 
-        (uint256 newAmount0, uint256 newAmount1) = CMathLib
-            .getAmountsFromLiquiditySqrtPriceX96(
-                newSqrtPriceX96,
-                CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
-                CMathLib.getSqrtPriceFromPrice(lp.priceLower),
-                liquidity
-            );
+        (uint256 newAmount0, uint256 newAmount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
+            newSqrtPriceX96,
+            CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
+            CMathLib.getSqrtPriceFromPrice(lp.priceLower),
+            liquidity
+        );
 
         assertEq(amount0Provided, 998995580131581599);
         assertEq(amount1Provided, 4999999999999999999998);
@@ -136,9 +133,7 @@ contract CMathLibTest is Test {
 
     // Helpers
 
-    function _provideLiquidity(
-        LP memory lpFixture
-    ) internal pure returns (uint128, uint256, uint256) {
+    function _provideLiquidity(LP memory lpFixture) internal pure returns (uint128, uint256, uint256) {
         uint128 _liquidity = CMathLib.getLiquidityFromAmountsSqrtPriceX96(
             CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
             CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
@@ -147,13 +142,12 @@ contract CMathLibTest is Test {
             lpFixture.amount1
         );
 
-        (uint256 _amount0, uint256 _amount1) = CMathLib
-            .getAmountsFromLiquiditySqrtPriceX96(
-                CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
-                CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
-                CMathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
-                _liquidity
-            );
+        (uint256 _amount0, uint256 _amount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
+            CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
+            CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
+            CMathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
+            _liquidity
+        );
         return (_liquidity, _amount0, _amount1);
     }
 }

@@ -8,13 +8,10 @@ import {CConstantProductTestHarness} from "../CConstantProductTestHarness.sol";
 
 abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
     function testValidOrderParameters() public {
-        CConstantProduct.TradingParams
-            memory defaultTradingParams = getDefaultTradingParams();
+        CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
         setUpDefaultReserves(address(constantProduct));
         setUpDefaultOracleResponse();
-        GPv2Order.Data memory order = checkedGetTradeableOrder(
-            defaultTradingParams
-        );
+        GPv2Order.Data memory order = checkedGetTradeableOrder(defaultTradingParams);
 
         // Test all parameters with the exception of sell/buy tokens and amounts
         assertEq(order.receiver, GPv2Order.RECEIVER_SAME_AS_OWNER);
@@ -28,8 +25,7 @@ abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
     }
 
     function testOrderValidityMovesToNextBucket() public {
-        CConstantProduct.TradingParams
-            memory defaultTradingParams = getDefaultTradingParams();
+        CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
         setUpDefaultReserves(address(constantProduct));
         setUpDefaultOracleResponse();
 
@@ -40,29 +36,21 @@ abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
         // bucket.
         uint256 smallOffset = 42;
         require(smallOffset < constantProduct.MAX_ORDER_DURATION());
-        vm.warp(
-            block.timestamp + constantProduct.MAX_ORDER_DURATION() + smallOffset
-        );
+        vm.warp(block.timestamp + constantProduct.MAX_ORDER_DURATION() + smallOffset);
         order = checkedGetTradeableOrder(defaultTradingParams);
         assertEq(order.validTo, 2 * constantProduct.MAX_ORDER_DURATION());
     }
 
     function testRevertsIfAmountTooLowOnSellToken() public {
-        CConstantProduct.TradingParams
-            memory defaultTradingParams = getDefaultTradingParams();
+        CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
         setUpDefaultReserves(address(constantProduct));
         setUpDefaultOracleResponseOtherSide();
         // The revert message depends on the block. To make this more visible,
         // we set an arbitrary block number.
         uint256 currentBlock = 1337;
         vm.roll(currentBlock);
-        GPv2Order.Data memory order = checkedGetTradeableOrder(
-            defaultTradingParams
-        );
-        require(
-            order.sellToken == constantProduct.token0(),
-            "test was design for token0 to be the sell token"
-        );
+        GPv2Order.Data memory order = checkedGetTradeableOrder(defaultTradingParams);
+        require(order.sellToken == constantProduct.token0(), "test was design for token0 to be the sell token");
         // If the minimum is exactly the trade amount, there's no revert.
         defaultTradingParams.minTradedToken0 = order.sellAmount;
         checkedGetTradeableOrder(defaultTradingParams);
@@ -70,30 +58,22 @@ abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
         defaultTradingParams.minTradedToken0 = order.sellAmount + 1;
         vm.expectRevert(
             abi.encodeWithSelector(
-                IWatchtowerCustomErrors.PollTryAtBlock.selector,
-                currentBlock + 1,
-                "traded amount too small"
+                IWatchtowerCustomErrors.PollTryAtBlock.selector, currentBlock + 1, "traded amount too small"
             )
         );
         constantProduct.getTradeableOrder(defaultTradingParams);
     }
 
     function testRevertsIfAmountTooLowOnBuyToken() public {
-        CConstantProduct.TradingParams
-            memory defaultTradingParams = getDefaultTradingParams();
+        CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
         setUpDefaultReserves(address(constantProduct));
         setUpDefaultOracleResponse();
         // The revert message depends on the block. To make this more visible,
         // we set an arbitrary block number.
         uint256 currentBlock = 1337;
         vm.roll(currentBlock);
-        GPv2Order.Data memory order = checkedGetTradeableOrder(
-            defaultTradingParams
-        );
-        require(
-            order.buyToken == constantProduct.token0(),
-            "test was design for token0 to be the buy token"
-        );
+        GPv2Order.Data memory order = checkedGetTradeableOrder(defaultTradingParams);
+        require(order.buyToken == constantProduct.token0(), "test was design for token0 to be the buy token");
         // If the minimum is exactly the trade amount, there's no revert.
         defaultTradingParams.minTradedToken0 = order.buyAmount;
         checkedGetTradeableOrder(defaultTradingParams);
@@ -101,9 +81,7 @@ abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
         defaultTradingParams.minTradedToken0 = order.buyAmount + 1;
         vm.expectRevert(
             abi.encodeWithSelector(
-                IWatchtowerCustomErrors.PollTryAtBlock.selector,
-                currentBlock + 1,
-                "traded amount too small"
+                IWatchtowerCustomErrors.PollTryAtBlock.selector, currentBlock + 1, "traded amount too small"
             )
         );
         constantProduct.getTradeableOrder(defaultTradingParams);

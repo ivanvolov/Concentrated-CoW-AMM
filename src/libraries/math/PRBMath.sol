@@ -519,16 +519,17 @@ library PRBMath {
         }
 
         assembly {
-            result := add(
-                mul(
-                    or(
-                        div(sub(prod0, remainder), SCALE_LPOTD),
-                        mul(sub(prod1, gt(remainder, prod0)), add(div(sub(0, SCALE_LPOTD), SCALE_LPOTD), 1))
+            result :=
+                add(
+                    mul(
+                        or(
+                            div(sub(prod0, remainder), SCALE_LPOTD),
+                            mul(sub(prod1, gt(remainder, prod0)), add(div(sub(0, SCALE_LPOTD), SCALE_LPOTD), 1))
+                        ),
+                        SCALE_INVERSE
                     ),
-                    SCALE_INVERSE
-                ),
-                roundUpUnit
-            )
+                    roundUpUnit
+                )
         }
     }
 

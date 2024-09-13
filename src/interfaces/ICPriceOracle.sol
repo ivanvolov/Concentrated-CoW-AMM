@@ -9,9 +9,8 @@ pragma solidity ^0.8.24;
  * example on Uniswap, Balancer, Chainlink...
  */
 interface ICPriceOracle {
-    function getSqrtPriceX96(
-        address token0,
-        address token1,
-        bytes calldata data
-    ) external view returns (uint160 sqrtPriceX96);
+    function getSqrtPriceX96(address token0, address token1, bytes calldata data)
+        external
+        view
+        returns (uint160 sqrtPriceX96);
 }

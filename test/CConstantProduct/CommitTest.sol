@@ -6,21 +6,13 @@ import {CConstantProductTestHarness, CConstantProduct} from "./CConstantProductT
 abstract contract CommitTest is CConstantProductTestHarness {
     function testSolutionSettlerCanSetAnyCommit() public {
         vm.prank(address(solutionSettler));
-        constantProduct.commit(
-            0x4242424242424242424242424242424242424242424242424242424242424242
-        );
+        constantProduct.commit(0x4242424242424242424242424242424242424242424242424242424242424242);
     }
 
     function testCommitIsPermissioned() public {
         vm.prank(makeAddr("some random address"));
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                CConstantProduct.CommitOutsideOfSettlement.selector
-            )
-        );
-        constantProduct.commit(
-            0x4242424242424242424242424242424242424242424242424242424242424242
-        );
+        vm.expectRevert(abi.encodeWithSelector(CConstantProduct.CommitOutsideOfSettlement.selector));
+        constantProduct.commit(0x4242424242424242424242424242424242424242424242424242424242424242);
     }
 
     function testCommittingSetsCommitment() public {

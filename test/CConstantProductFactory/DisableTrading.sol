@@ -9,16 +9,8 @@ abstract contract DisableTrading is CConstantProductFactoryTestHarness {
     function testOnlyOwnerCanDisableTrading() public {
         address notTheOwner = makeAddr("some address that isn't the owner");
         CConstantProduct amm = setupAndCreateAMM();
-        require(
-            constantProductFactory.owner(amm) != notTheOwner,
-            "bad test setup"
-        );
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                CConstantProductFactory.OnlyOwnerCanCall.selector,
-                address(this)
-            )
-        );
+        require(constantProductFactory.owner(amm) != notTheOwner, "bad test setup");
+        vm.expectRevert(abi.encodeWithSelector(CConstantProductFactory.OnlyOwnerCanCall.selector, address(this)));
         vm.prank(notTheOwner);
         constantProductFactory.disableTrading(amm);
     }
@@ -37,17 +29,11 @@ abstract contract DisableTrading is CConstantProductFactoryTestHarness {
     }
 
     function setupAndCreateAMM() private returns (CConstantProduct) {
-        ICPriceOracle priceOracle = ICPriceOracle(
-            makeAddr("DisableTrading: price oracle")
-        );
+        ICPriceOracle priceOracle = ICPriceOracle(makeAddr("DisableTrading: price oracle"));
         bytes memory priceOracleData = bytes("some price oracle data");
         bytes32 appData = keccak256("DisableTrading: app data");
         mocksForTokenCreation(
-            constantProductFactory.ammDeterministicAddress(
-                address(this),
-                mockableToken0,
-                mockableToken1
-            )
+            constantProductFactory.ammDeterministicAddress(address(this), mockableToken0, mockableToken1)
         );
 
         setUpOracleResponse(
@@ -57,17 +43,16 @@ abstract contract DisableTrading is CConstantProductFactoryTestHarness {
             address(mockableToken1),
             priceOracleData
         );
-        return
-            constantProductFactory.create(
-                mockableToken0,
-                mockableToken1,
-                DEFAULT_LIQUIDITY,
-                minTradedToken0,
-                priceOracle,
-                priceOracleData,
-                appData,
-                DEFAULT_PRICE_UPPER_X96,
-                DEFAULT_PRICE_LOWER_X96
-            );
+        return constantProductFactory.create(
+            mockableToken0,
+            mockableToken1,
+            DEFAULT_LIQUIDITY,
+            minTradedToken0,
+            priceOracle,
+            priceOracleData,
+            appData,
+            DEFAULT_PRICE_UPPER_X96,
+            DEFAULT_PRICE_LOWER_X96
+        );
     }
 }

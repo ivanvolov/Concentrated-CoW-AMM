@@ -13,22 +13,8 @@ abstract contract Deposit is CConstantProductFactoryTestHarness {
 
         address token0 = address(constantProduct.token0());
         address token1 = address(constantProduct.token1());
-        vm.expectCall(
-            token0,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (anyone, address(constantProduct), amount0)
-            ),
-            1
-        );
-        vm.expectCall(
-            token1,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (anyone, address(constantProduct), amount1)
-            ),
-            1
-        );
+        vm.expectCall(token0, abi.encodeCall(IERC20.transferFrom, (anyone, address(constantProduct), amount0)), 1);
+        vm.expectCall(token1, abi.encodeCall(IERC20.transferFrom, (anyone, address(constantProduct), amount1)), 1);
         vm.prank(anyone);
         constantProductFactory.deposit(constantProduct, amount0, amount1);
     }
@@ -40,20 +26,10 @@ abstract contract Deposit is CConstantProductFactoryTestHarness {
         address token0 = address(constantProduct.token0());
         address token1 = address(constantProduct.token1());
         vm.mockCall(
-            token0,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(this), address(constantProduct), amount0)
-            ),
-            hex""
+            token0, abi.encodeCall(IERC20.transferFrom, (address(this), address(constantProduct), amount0)), hex""
         );
         vm.mockCall(
-            token1,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(this), address(constantProduct), amount1)
-            ),
-            hex""
+            token1, abi.encodeCall(IERC20.transferFrom, (address(this), address(constantProduct), amount1)), hex""
         );
 
         // No more calls to the tokens are expected.
@@ -70,19 +46,11 @@ abstract contract Deposit is CConstantProductFactoryTestHarness {
         address token0 = address(constantProduct.token0());
         address token1 = address(constantProduct.token1());
         vm.mockCall(
-            token0,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(this), address(constantProduct), amount0)
-            ),
-            hex""
+            token0, abi.encodeCall(IERC20.transferFrom, (address(this), address(constantProduct), amount0)), hex""
         );
         vm.mockCall(
             token1,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(this), address(constantProduct), amount1)
-            ),
+            abi.encodeCall(IERC20.transferFrom, (address(this), address(constantProduct), amount1)),
             abi.encode(false)
         );
 
@@ -97,19 +65,11 @@ abstract contract Deposit is CConstantProductFactoryTestHarness {
         address token0 = address(constantProduct.token0());
         address token1 = address(constantProduct.token1());
         vm.mockCall(
-            token0,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(this), address(constantProduct), amount0)
-            ),
-            hex""
+            token0, abi.encodeCall(IERC20.transferFrom, (address(this), address(constantProduct), amount0)), hex""
         );
         vm.mockCallRevert(
             token1,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(this), address(constantProduct), amount1)
-            ),
+            abi.encodeCall(IERC20.transferFrom, (address(this), address(constantProduct), amount1)),
             "this transfer reverted"
         );
 

@@ -14,7 +14,14 @@ import {CMathLib} from "src/libraries/CMathLib.sol";
 import {TestAccount, TestAccountLib} from "lib/composable-cow/test/libraries/TestAccountLib.t.sol";
 import {GPv2TradeEncoder} from "lib/composable-cow/test/vendored/GPv2TradeEncoder.sol";
 
-import {IERC20, GPv2Settlement, GPv2Order, GPv2Trade, GPv2Interaction, GPv2Signing} from "cowprotocol/contracts/GPv2Settlement.sol";
+import {
+    IERC20,
+    GPv2Settlement,
+    GPv2Order,
+    GPv2Trade,
+    GPv2Interaction,
+    GPv2Signing
+} from "cowprotocol/contracts/GPv2Settlement.sol";
 
 contract E2EConditionalOrderTest is BaseComposableCoWTest {
     using GPv2Order for GPv2Order.Data;
@@ -22,13 +29,10 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
 
     bytes DEFAULT_PRICE_ORACLE_DATA = bytes("some price oracle data");
 
-    uint160 DEFAULT_PRICE_UPPER_X96 =
-        CMathLib.getSqrtPriceFromPrice(5500 ether);
-    uint160 DEFAULT_PRICE_LOWER_X96 =
-        CMathLib.getSqrtPriceFromPrice(4545 ether);
+    uint160 DEFAULT_PRICE_UPPER_X96 = CMathLib.getSqrtPriceFromPrice(5500 ether);
+    uint160 DEFAULT_PRICE_LOWER_X96 = CMathLib.getSqrtPriceFromPrice(4545 ether);
 
-    uint160 DEFAULT_PRICE_CURRENT_X96 =
-        CMathLib.getSqrtPriceFromPrice(5000 ether);
+    uint160 DEFAULT_PRICE_CURRENT_X96 = CMathLib.getSqrtPriceFromPrice(5000 ether);
     uint160 DEFAULT_NEW_PRICE_X96 = CMathLib.getSqrtPriceFromPrice(4565 ether);
 
     uint128 DEFAULT_LIQUIDITY = 1518129116516325613903;
@@ -44,9 +48,7 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
         super.setUp();
         DAI = token0;
         WETH = token1;
-        ammFactory = new CConstantProductFactory(
-            ISettlement(address(settlement))
-        );
+        ammFactory = new CConstantProductFactory(ISettlement(address(settlement)));
         priceOracle = new PriceOracle();
     }
 
@@ -68,11 +70,7 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
         bytes32 appData = keccak256("order app data");
 
         setUpOracleResponse(
-            DEFAULT_PRICE_CURRENT_X96,
-            address(priceOracle),
-            address(DAI),
-            address(WETH),
-            DEFAULT_PRICE_ORACLE_DATA
+            DEFAULT_PRICE_CURRENT_X96, address(priceOracle), address(DAI), address(WETH), DEFAULT_PRICE_ORACLE_DATA
         );
 
         amm = ammFactory.create(
@@ -95,36 +93,22 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
         assertEq(WETH.balanceOf(address(amm)), startAmountWeth);
 
         setUpOracleResponse(
-            DEFAULT_NEW_PRICE_X96,
-            address(priceOracle),
-            address(DAI),
-            address(WETH),
-            DEFAULT_PRICE_ORACLE_DATA
+            DEFAULT_NEW_PRICE_X96, address(priceOracle), address(DAI), address(WETH), DEFAULT_PRICE_ORACLE_DATA
         );
 
-        CConstantProduct.TradingParams memory data = CConstantProduct
-            .TradingParams({
-                minTradedToken0: minTradedToken0,
-                priceOracle: priceOracle,
-                priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
-                appData: appData,
-                sqrtPriceDepositX96: DEFAULT_PRICE_CURRENT_X96,
-                sqrtPriceUpperX96: DEFAULT_PRICE_UPPER_X96,
-                sqrtPriceLowerX96: DEFAULT_PRICE_LOWER_X96
-            });
-        IConditionalOrder.ConditionalOrderParams memory params = super
-            .createOrder(
-                IConditionalOrder(address(ammFactory)),
-                keccak256("e2e:any salt"),
-                abi.encode(data)
-            );
-        (GPv2Order.Data memory order, bytes memory sig) = ammFactory
-            .getTradeableOrderWithSignature(
-                amm,
-                params,
-                hex"",
-                new bytes32[](0)
-            );
+        CConstantProduct.TradingParams memory data = CConstantProduct.TradingParams({
+            minTradedToken0: minTradedToken0,
+            priceOracle: priceOracle,
+            priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
+            appData: appData,
+            sqrtPriceDepositX96: DEFAULT_PRICE_CURRENT_X96,
+            sqrtPriceUpperX96: DEFAULT_PRICE_UPPER_X96,
+            sqrtPriceLowerX96: DEFAULT_PRICE_LOWER_X96
+        });
+        IConditionalOrder.ConditionalOrderParams memory params =
+            super.createOrder(IConditionalOrder(address(ammFactory)), keccak256("e2e:any salt"), abi.encode(data));
+        (GPv2Order.Data memory order, bytes memory sig) =
+            ammFactory.getTradeableOrderWithSignature(amm, params, hex"", new bytes32[](0));
 
         // The trade will be settled against bob.
         uint256 bobWethBefore = WETH.balanceOf(bob.addr);
@@ -144,10 +128,7 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
         uint256 endBalanceWeth = WETH.balanceOf(address(amm));
 
         assertEq(bobDaiBefore + startAmountDai, endBalanceDai);
-        assertEq(
-            endBalanceWeth + WETH.balanceOf(bob.addr) - bobWethBefore,
-            startAmountWeth
-        );
+        assertEq(endBalanceWeth + WETH.balanceOf(bob.addr) - bobWethBefore, startAmountWeth);
 
         vm.prank(owner);
         ammFactory.disableTrading(amm);
@@ -167,10 +148,7 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     ) public {
         vm.mockCall(
             oracle,
-            abi.encodeCall(
-                ICPriceOracle.getSqrtPriceX96,
-                (token0, token1, priceOracleData)
-            ),
+            abi.encodeCall(ICPriceOracle.getSqrtPriceX96, (token0, token1, priceOracleData)),
             abi.encode(newSqrtPriceX96)
         );
     }
@@ -208,16 +186,12 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
             sellTokenBalance: GPv2Order.BALANCE_ERC20
         });
 
-        bytes memory counterPartySig = counterParty.signPacked(
-            GPv2Order.hash(counterOrder, settlement.domainSeparator())
-        );
+        bytes memory counterPartySig =
+            counterParty.signPacked(GPv2Order.hash(counterOrder, settlement.domainSeparator()));
 
         // Authorize the GPv2VaultRelayer to spend bob's sell token
         vm.prank(counterParty.addr);
-        IERC20(counterOrder.sellToken).approve(
-            address(relayer),
-            counterOrder.sellAmount
-        );
+        IERC20(counterOrder.sellToken).approve(address(relayer), counterOrder.sellAmount);
 
         // first declare the tokens we will be trading
         IERC20[] memory tokens = new IERC20[](2);
@@ -242,10 +216,7 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
             validTo: order.validTo,
             appData: order.appData,
             feeAmount: order.feeAmount,
-            flags: GPv2TradeEncoder.encodeFlags(
-                order,
-                GPv2Signing.Scheme.Eip1271
-            ),
+            flags: GPv2TradeEncoder.encodeFlags(order, GPv2Signing.Scheme.Eip1271),
             executedAmount: order.sellAmount,
             signature: abi.encodePacked(who, bundleBytes)
         });
@@ -260,28 +231,19 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
             validTo: counterOrder.validTo,
             appData: counterOrder.appData,
             feeAmount: counterOrder.feeAmount,
-            flags: GPv2TradeEncoder.encodeFlags(
-                counterOrder,
-                GPv2Signing.Scheme.Eip712
-            ),
+            flags: GPv2TradeEncoder.encodeFlags(counterOrder, GPv2Signing.Scheme.Eip712),
             executedAmount: counterOrder.sellAmount,
             signature: counterPartySig
         });
 
         // fourth declare the interactions
-        GPv2Interaction.Data[][3] memory interactions = [
-            new GPv2Interaction.Data[](0),
-            new GPv2Interaction.Data[](0),
-            new GPv2Interaction.Data[](1)
-        ];
+        GPv2Interaction.Data[][3] memory interactions =
+            [new GPv2Interaction.Data[](0), new GPv2Interaction.Data[](0), new GPv2Interaction.Data[](1)];
 
         interactions[2][0] = GPv2Interaction.Data({
             target: address(amm),
             value: 0,
-            callData: abi.encodeWithSelector(
-                amm.postHook.selector,
-                tradingParams
-            )
+            callData: abi.encodeWithSelector(amm.postHook.selector, tradingParams)
         });
 
         // finally we can execute the settlement

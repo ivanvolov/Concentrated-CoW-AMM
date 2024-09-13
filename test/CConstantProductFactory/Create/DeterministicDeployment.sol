@@ -7,29 +7,17 @@ import {CConstantProductFactoryTestHarness} from "../CConstantProductFactoryTest
 
 import {CMathLib} from "src/libraries/CMathLib.sol";
 
-abstract contract DeterministicDeployment is
-    CConstantProductFactoryTestHarness
-{
+abstract contract DeterministicDeployment is CConstantProductFactoryTestHarness {
     uint256 private amount0 = 1999508296761490795;
     uint256 private amount1 = 220271565651919101572;
 
     function testDeploysAtExpectedAddress() public {
-        address constantProductAddress = constantProductFactory
-            .ammDeterministicAddress(
-                address(this),
-                mockableToken0,
-                mockableToken1
-            );
-        require(
-            constantProductAddress.code.length == 0,
-            "no AMM should be deployed at the start"
-        );
+        address constantProductAddress =
+            constantProductFactory.ammDeterministicAddress(address(this), mockableToken0, mockableToken1);
+        require(constantProductAddress.code.length == 0, "no AMM should be deployed at the start");
         mocksForTokenCreation(constantProductAddress);
         setUpOracleResponse(
-            DEFAULT_NEW_PRICE_X96,
-            address(defaultPriceOracle),
-            address(mockableToken0),
-            address(mockableToken1)
+            DEFAULT_NEW_PRICE_X96, address(defaultPriceOracle), address(mockableToken0), address(mockableToken1)
         );
         CConstantProduct deployed = constantProductFactory.create(
             mockableToken0,
@@ -47,18 +35,11 @@ abstract contract DeterministicDeployment is
     }
 
     function testSameOwnerCannotDeployAMMWithSameParametersTwice() public {
-        address constantProductAddress = constantProductFactory
-            .ammDeterministicAddress(
-                address(this),
-                mockableToken0,
-                mockableToken1
-            );
+        address constantProductAddress =
+            constantProductFactory.ammDeterministicAddress(address(this), mockableToken0, mockableToken1);
         mocksForTokenCreation(constantProductAddress);
         setUpOracleResponse(
-            DEFAULT_NEW_PRICE_X96,
-            address(defaultPriceOracle),
-            address(mockableToken0),
-            address(mockableToken1)
+            DEFAULT_NEW_PRICE_X96, address(defaultPriceOracle), address(mockableToken0), address(mockableToken1)
         );
         constantProductFactory.create(
             mockableToken0,
@@ -86,45 +67,20 @@ abstract contract DeterministicDeployment is
     }
 
     function testSameOwnerCanDeployAMMWithDifferentTokens() public {
-        address ammAddress1 = constantProductFactory.ammDeterministicAddress(
-            address(this),
-            mockableToken0,
-            mockableToken1
-        );
+        address ammAddress1 =
+            constantProductFactory.ammDeterministicAddress(address(this), mockableToken0, mockableToken1);
         mocksForTokenCreation(ammAddress1);
         setUpOracleResponse(
-            DEFAULT_NEW_PRICE_X96,
-            address(defaultPriceOracle),
-            address(mockableToken0),
-            address(mockableToken1)
+            DEFAULT_NEW_PRICE_X96, address(defaultPriceOracle), address(mockableToken0), address(mockableToken1)
         );
         // Same setup as in `mocksForTokenCreation`, but for newly created tokens.
-        IERC20 extraToken0 = IERC20(
-            makeAddr("DeterministicDeployment: extra token 0")
-        );
-        IERC20 extraToken1 = IERC20(
-            makeAddr("DeterministicDeployment: extra token 1")
-        );
-        address ammAddress2 = constantProductFactory.ammDeterministicAddress(
-            address(this),
-            extraToken0,
-            extraToken1
-        );
-        setUpTokenForDeployment(
-            extraToken0,
-            ammAddress2,
-            address(constantProductFactory)
-        );
-        setUpTokenForDeployment(
-            extraToken1,
-            ammAddress2,
-            address(constantProductFactory)
-        );
+        IERC20 extraToken0 = IERC20(makeAddr("DeterministicDeployment: extra token 0"));
+        IERC20 extraToken1 = IERC20(makeAddr("DeterministicDeployment: extra token 1"));
+        address ammAddress2 = constantProductFactory.ammDeterministicAddress(address(this), extraToken0, extraToken1);
+        setUpTokenForDeployment(extraToken0, ammAddress2, address(constantProductFactory));
+        setUpTokenForDeployment(extraToken1, ammAddress2, address(constantProductFactory));
         setUpOracleResponse(
-            DEFAULT_NEW_PRICE_X96,
-            address(defaultPriceOracle),
-            address(extraToken0),
-            address(extraToken1)
+            DEFAULT_NEW_PRICE_X96, address(defaultPriceOracle), address(extraToken0), address(extraToken1)
         );
 
         constantProductFactory.create(
@@ -155,23 +111,12 @@ abstract contract DeterministicDeployment is
     function testDifferentOwnersCanDeployAMMWithSameParameters() public {
         address owner1 = makeAddr("DeterministicDeployment: owner 1");
         address owner2 = makeAddr("DeterministicDeployment: owner 2");
-        address ammOwner1 = constantProductFactory.ammDeterministicAddress(
-            owner1,
-            mockableToken0,
-            mockableToken1
-        );
-        address ammOwner2 = constantProductFactory.ammDeterministicAddress(
-            owner2,
-            mockableToken0,
-            mockableToken1
-        );
+        address ammOwner1 = constantProductFactory.ammDeterministicAddress(owner1, mockableToken0, mockableToken1);
+        address ammOwner2 = constantProductFactory.ammDeterministicAddress(owner2, mockableToken0, mockableToken1);
         mocksForTokenCreation(ammOwner1);
         mocksForTokenCreation(ammOwner2);
         setUpOracleResponse(
-            DEFAULT_NEW_PRICE_X96,
-            address(defaultPriceOracle),
-            address(mockableToken0),
-            address(mockableToken1)
+            DEFAULT_NEW_PRICE_X96, address(defaultPriceOracle), address(mockableToken0), address(mockableToken1)
         );
         vm.prank(owner1);
         constantProductFactory.create(

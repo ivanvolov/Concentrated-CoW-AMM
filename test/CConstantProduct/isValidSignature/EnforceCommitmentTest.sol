@@ -17,11 +17,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         vm.prank(address(solutionSettler));
         constantProduct.commit(badCommitment);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                CConstantProduct.OrderDoesNotMatchCommitmentHash.selector
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(CConstantProduct.OrderDoesNotMatchCommitmentHash.selector));
         constantProduct.isValidSignature(data.orderHash, data.signature);
     }
 
@@ -29,18 +25,12 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         setUpDefaultOracleResponse();
         setUpDefaultReserves(address(constantProduct));
 
-        require(
-            constantProduct.commitment() == constantProduct.EMPTY_COMMITMENT(),
-            "test expects unset commitment"
-        );
+        require(constantProduct.commitment() == constantProduct.EMPTY_COMMITMENT(), "test expects unset commitment");
 
-        CConstantProduct.TradingParams
-            memory defaultTradingParams = getDefaultTradingParams();
+        CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
         constantProduct.enableTrading(defaultTradingParams);
 
-        GPv2Order.Data memory order = constantProduct.getTradeableOrder(
-            defaultTradingParams
-        );
+        GPv2Order.Data memory order = constantProduct.getTradeableOrder(defaultTradingParams);
         bytes32 orderHash = order.hash(solutionSettler.domainSeparator());
         bytes memory signature = abi.encode(order, defaultTradingParams);
         constantProduct.isValidSignature(orderHash, signature);
@@ -50,18 +40,12 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         setUpDefaultOracleResponse();
         setUpDefaultReserves(address(constantProduct));
 
-        require(
-            constantProduct.commitment() == constantProduct.EMPTY_COMMITMENT(),
-            "test expects unset commitment"
-        );
+        require(constantProduct.commitment() == constantProduct.EMPTY_COMMITMENT(), "test expects unset commitment");
 
-        CConstantProduct.TradingParams
-            memory defaultTradingParams = getDefaultTradingParams();
+        CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
         constantProduct.enableTrading(defaultTradingParams);
 
-        GPv2Order.Data memory originalOrder = constantProduct.getTradeableOrder(
-            defaultTradingParams
-        );
+        GPv2Order.Data memory originalOrder = constantProduct.getTradeableOrder(defaultTradingParams);
         GPv2Order.Data memory modifiedOrder;
 
         // All GPv2Order.Data parameters are included in this test. They are:
@@ -81,9 +65,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.sellToken = IERC20(makeAddr("bad sell token"));
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector
-            ),
+            abi.encodeWithSelector(CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector),
             defaultTradingParams,
             modifiedOrder
         );
@@ -91,9 +73,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.buyToken = IERC20(makeAddr("bad buy token"));
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector
-            ),
+            abi.encodeWithSelector(CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector),
             defaultTradingParams,
             modifiedOrder
         );
@@ -101,10 +81,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.receiver = makeAddr("bad receiver");
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                IConditionalOrder.OrderNotValid.selector,
-                "receiver must be zero address"
-            ),
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, "receiver must be zero address"),
             defaultTradingParams,
             modifiedOrder
         );
@@ -112,9 +89,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.sellAmount = modifiedOrder.sellAmount - 1;
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector
-            ),
+            abi.encodeWithSelector(CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector),
             defaultTradingParams,
             modifiedOrder
         );
@@ -122,9 +97,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.buyAmount = modifiedOrder.buyAmount + 1;
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector
-            ),
+            abi.encodeWithSelector(CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector),
             defaultTradingParams,
             modifiedOrder
         );
@@ -132,9 +105,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.validTo = modifiedOrder.validTo - 1;
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector
-            ),
+            abi.encodeWithSelector(CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector),
             defaultTradingParams,
             modifiedOrder
         );
@@ -142,10 +113,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.appData = keccak256("bad app data");
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                IConditionalOrder.OrderNotValid.selector,
-                "invalid appData"
-            ),
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, "invalid appData"),
             defaultTradingParams,
             modifiedOrder
         );
@@ -153,10 +121,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.feeAmount = modifiedOrder.feeAmount + 1;
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                IConditionalOrder.OrderNotValid.selector,
-                "fee amount must be zero"
-            ),
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, "fee amount must be zero"),
             defaultTradingParams,
             modifiedOrder
         );
@@ -164,9 +129,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.kind = GPv2Order.KIND_BUY;
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector
-            ),
+            abi.encodeWithSelector(CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector),
             defaultTradingParams,
             modifiedOrder
         );
@@ -174,9 +137,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.partiallyFillable = !modifiedOrder.partiallyFillable;
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector
-            ),
+            abi.encodeWithSelector(CConstantProduct.OrderDoesNotMatchDefaultTradeableOrder.selector),
             defaultTradingParams,
             modifiedOrder
         );
@@ -184,10 +145,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.sellTokenBalance = GPv2Order.BALANCE_EXTERNAL;
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                IConditionalOrder.OrderNotValid.selector,
-                "sellTokenBalance must be erc20"
-            ),
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, "sellTokenBalance must be erc20"),
             defaultTradingParams,
             modifiedOrder
         );
@@ -195,10 +153,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         modifiedOrder = deepClone(originalOrder);
         modifiedOrder.buyTokenBalance = GPv2Order.BALANCE_EXTERNAL;
         expectRevertIsValidSignature(
-            abi.encodeWithSelector(
-                IConditionalOrder.OrderNotValid.selector,
-                "buyTokenBalance must be erc20"
-            ),
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, "buyTokenBalance must be erc20"),
             defaultTradingParams,
             modifiedOrder
         );
@@ -215,9 +170,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
         constantProduct.isValidSignature(orderHash, signature);
     }
 
-    function deepClone(
-        GPv2Order.Data memory order
-    ) private pure returns (GPv2Order.Data memory) {
+    function deepClone(GPv2Order.Data memory order) private pure returns (GPv2Order.Data memory) {
         return abi.decode(abi.encode(order), (GPv2Order.Data));
     }
 }

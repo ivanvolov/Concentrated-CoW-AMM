@@ -3,7 +3,10 @@ pragma solidity ^0.8.24;
 
 import {CConstantProductFactory, IERC20} from "src/CConstantProductFactory.sol";
 
-import {EditableOwnerCConstantProductFactory, CConstantProductFactoryTestHarness} from "./CConstantProductFactoryTestHarness.sol";
+import {
+    EditableOwnerCConstantProductFactory,
+    CConstantProductFactoryTestHarness
+} from "./CConstantProductFactoryTestHarness.sol";
 
 abstract contract Withdraw is CConstantProductFactoryTestHarness {
     uint256 private amount0 = 1234;
@@ -11,77 +14,36 @@ abstract contract Withdraw is CConstantProductFactoryTestHarness {
     address private owner = makeAddr("Deposit: an arbitrary owner");
 
     function testWithdrawingIsPermissioned() public {
-        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(
-                solutionSettler
-            );
+        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(solutionSettler);
         factory.setOwner(constantProduct, owner);
-        address notOwner = makeAddr(
-            "Deposit: some address that isn't an owner"
-        );
+        address notOwner = makeAddr("Deposit: some address that isn't an owner");
 
         vm.prank(notOwner);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                CConstantProductFactory.OnlyOwnerCanCall.selector,
-                owner
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(CConstantProductFactory.OnlyOwnerCanCall.selector, owner));
         factory.withdraw(constantProduct, 1234, 5678);
     }
 
     function testCallsTransferFromOnWithdraw() public {
-        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(
-                solutionSettler
-            );
+        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(solutionSettler);
         factory.setOwner(constantProduct, owner);
 
         address token0 = address(constantProduct.token0());
         address token1 = address(constantProduct.token1());
-        vm.expectCall(
-            token0,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(constantProduct), owner, amount0)
-            ),
-            1
-        );
-        vm.expectCall(
-            token1,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(constantProduct), owner, amount1)
-            ),
-            1
-        );
+        vm.expectCall(token0, abi.encodeCall(IERC20.transferFrom, (address(constantProduct), owner, amount0)), 1);
+        vm.expectCall(token1, abi.encodeCall(IERC20.transferFrom, (address(constantProduct), owner, amount1)), 1);
 
         vm.prank(owner);
         factory.withdraw(constantProduct, amount0, amount1);
     }
 
     function testOnlyCallsTransferFromOnWithdraw() public {
-        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(
-                solutionSettler
-            );
+        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(solutionSettler);
         factory.setOwner(constantProduct, owner);
 
         address token0 = address(constantProduct.token0());
         address token1 = address(constantProduct.token1());
-        vm.mockCall(
-            token0,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(constantProduct), owner, amount0)
-            ),
-            hex""
-        );
-        vm.mockCall(
-            token1,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(constantProduct), owner, amount1)
-            ),
-            hex""
-        );
+        vm.mockCall(token0, abi.encodeCall(IERC20.transferFrom, (address(constantProduct), owner, amount0)), hex"");
+        vm.mockCall(token1, abi.encodeCall(IERC20.transferFrom, (address(constantProduct), owner, amount1)), hex"");
 
         // No more calls to the tokens are expected.
         vm.mockCallRevert(token0, hex"", "Unexpected call to token0");
@@ -92,28 +54,14 @@ abstract contract Withdraw is CConstantProductFactoryTestHarness {
     }
 
     function testRevertsIfTokenReturnsFalseOnWithdraw() public {
-        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(
-                solutionSettler
-            );
+        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(solutionSettler);
         factory.setOwner(constantProduct, owner);
 
         address token0 = address(constantProduct.token0());
         address token1 = address(constantProduct.token1());
+        vm.mockCall(token0, abi.encodeCall(IERC20.transferFrom, (address(constantProduct), owner, amount0)), hex"");
         vm.mockCall(
-            token0,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(constantProduct), owner, amount0)
-            ),
-            hex""
-        );
-        vm.mockCall(
-            token1,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(constantProduct), owner, amount1)
-            ),
-            abi.encode(false)
+            token1, abi.encodeCall(IERC20.transferFrom, (address(constantProduct), owner, amount1)), abi.encode(false)
         );
 
         vm.expectRevert("SafeERC20: ERC20 operation did not succeed");
@@ -122,27 +70,15 @@ abstract contract Withdraw is CConstantProductFactoryTestHarness {
     }
 
     function testRevertsIfAnyDepositRevertsOnWithdraw() public {
-        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(
-                solutionSettler
-            );
+        EditableOwnerCConstantProductFactory factory = new EditableOwnerCConstantProductFactory(solutionSettler);
         factory.setOwner(constantProduct, owner);
 
         address token0 = address(constantProduct.token0());
         address token1 = address(constantProduct.token1());
-        vm.mockCall(
-            token0,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(constantProduct), owner, amount0)
-            ),
-            hex""
-        );
+        vm.mockCall(token0, abi.encodeCall(IERC20.transferFrom, (address(constantProduct), owner, amount0)), hex"");
         vm.mockCallRevert(
             token1,
-            abi.encodeCall(
-                IERC20.transferFrom,
-                (address(constantProduct), owner, amount1)
-            ),
+            abi.encodeCall(IERC20.transferFrom, (address(constantProduct), owner, amount1)),
             "this transfer reverted"
         );
 
