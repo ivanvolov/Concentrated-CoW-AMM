@@ -1,27 +1,4 @@
-# CoW AMM
-
-> [!WARNING]
-> All CoW AMM versions described in this repository have been deprecated in favor of the [Balancer CoW AMM](https://github.com/defi-wonderland/balancer-v1-amm/).
-> Support for pools deployed with the code in this repository may be dropped at any time without further notice.
-
-CoW AMM is an automated market maker running on top of CoW Protocol.
-
-## Documentation
-
-You can find detailed documentation on the building blocks of this repo in the following files:
-
-- [amm.md](./docs/amm.md): details on what a CoW AMM is and how to set it up.
-
-## Research
-
-Details on the theory behind CoW AMM can be found on the paper [Arbitrageurs' profits, LVR, and sandwich attacks: batch trading as an AMM design response](https://arxiv.org/pdf/2307.02074.pdf).
-
-## Development
-
-### Dev set up
-
-You can install git hooks to help you catch simple mistakes before running some git actions like committing.
-See the [dedicated instructions](./dev/hooks/install.md) for how to install the hooks.
+# Concentrated-CoW-AMM
 
 ### Build
 
