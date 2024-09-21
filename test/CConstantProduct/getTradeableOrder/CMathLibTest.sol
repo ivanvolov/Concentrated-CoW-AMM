@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
+import "forge-std/console.sol";
 import {Test} from "forge-std/Test.sol";
+
 import {CMathLib} from "@src/libraries/CMathLib.sol";
 
 contract CMathLibTest is Test {
@@ -62,78 +64,75 @@ contract CMathLibTest is Test {
         assertApproxEqAbs(amount1Provided, lp.amount1, 1e4);
     }
 
-    function test_uniswapV3_math_swap_sqrt_price() public {
-        (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
-        assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
+    function test_uniswapV3_math_swap_amount0() public {
+        (liquidity, , ) = _provideLiquidity(lp);
 
-        uint160 newSqrtPriceX96 = CMathLib.getSqrtPriceFromPrice(4565 ether);
-        assertEq(newSqrtPriceX96, 5352779161536754564491933729506);
+        uint256 swapAmount0 = 8396874645169942;
+        (uint256 amount0Swap, uint256 amount1Swap) = CMathLib
+            .getSwapAmountsFromAmount0(
+                CMathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                liquidity,
+                swapAmount0
+            );
 
-        (uint256 newAmount0, uint256 newAmount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
-            newSqrtPriceX96,
-            CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
-            CMathLib.getSqrtPriceFromPrice(lp.priceLower),
-            liquidity
-        );
-
-        assertEq(amount0Provided, 998995580131581599);
-        assertEq(amount1Provided, 4999999999999999999998);
-        assertEq(newAmount0, 1999508296761490795);
-        assertEq(newAmount1, 220271565651919101596);
-
-        // @Notice: the sqrtPriceX96 goes down so price goes down. This means we will sell token1 for token0.
+        assertApproxEqAbs(amount0Swap, swapAmount0, 1e4);
+        assertEq(amount1Swap, 41967160291541203252);
     }
 
-    function test_uniswapV3_math_swap_sqrt_price_out_of_range() public {
+    function test_uniswapV3_math_swap_amount0_full_range() public {
         (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
-        assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
 
-        (uint256 newAmount0, uint256 newAmount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
-            CMathLib.getSqrtPriceFromPrice(5550 ether),
-            CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
-            CMathLib.getSqrtPriceFromPrice(lp.priceLower),
-            liquidity
-        );
+        (uint256 amount0Swap, uint256 amount1Swap) = CMathLib
+            .getSwapAmountsFromAmount0(
+                CMathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                liquidity,
+                amount0Provided
+            );
 
-        assertEq(newAmount0, 0);
-        assertEq(newAmount1, 10238638112880364775103);
+        assertApproxEqAbs(amount0Provided, amount0Swap, 1e1);
+        assertEq(amount1Swap, 4772802897174754244068);
 
-        (newAmount0, newAmount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
-            CMathLib.getSqrtPriceFromPrice(6000 ether),
-            CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
-            CMathLib.getSqrtPriceFromPrice(lp.priceLower),
-            liquidity
-        );
-
-        assertEq(newAmount0, 0);
-        assertEq(newAmount1, 10238638112880364775103);
+        assertGe(amount0Provided, amount0Swap);
+        assertGe(amount1Provided, amount1Swap);
     }
 
-    function test_uniswapV3_math_swap_sqrt_price_other_side() public {
+    function test_uniswapV3_math_swap_amount1() public {
+        (liquidity, , ) = _provideLiquidity(lp);
+
+        uint256 swapAmount1 = 42 ether;
+        (uint256 amount0Swap, uint256 amount1Swap) = CMathLib
+            .getSwapAmountsFromAmount1(
+                CMathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                liquidity,
+                swapAmount1
+            );
+
+        assertEq(amount0Swap, 8396874645169942);
+        assertApproxEqAbs(amount1Swap, swapAmount1, 1e4);
+    }
+
+    function test_uniswapV3_math_swap_amount1_full_range() public {
         (liquidity, amount0Provided, amount1Provided) = _provideLiquidity(lp);
-        assertApproxEqAbs(liquidity, 1518129116516325613903, 1e3);
 
-        uint160 newSqrtPriceX96 = CMathLib.getSqrtPriceFromPrice(5499 ether);
-        assertEq(newSqrtPriceX96, 5875030437023750975904034809688);
+        (uint256 amount0Swap, uint256 amount1Swap) = CMathLib
+            .getSwapAmountsFromAmount1(
+                CMathLib.getSqrtPriceFromPrice(lp.currentPrice),
+                liquidity,
+                amount1Provided
+            );
 
-        (uint256 newAmount0, uint256 newAmount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
-            newSqrtPriceX96,
-            CMathLib.getSqrtPriceFromPrice(lp.priceUpper),
-            CMathLib.getSqrtPriceFromPrice(lp.priceLower),
-            liquidity
-        );
+        assertEq(amount0Swap, 955513191680349318);
+        assertApproxEqAbs(amount1Provided, amount1Swap, 1e1);
 
-        assertEq(amount0Provided, 998995580131581599);
-        assertEq(amount1Provided, 4999999999999999999998);
-        assertEq(newAmount0, 2047079670391420);
-        assertEq(newAmount1, 10227380683092996436668);
-
-        // @Notice: the sqrtPriceX96 goes up so price goes up. This means we will sell token0 for token1.
+        assertGe(amount0Provided, amount0Swap);
+        assertGe(amount1Provided, amount1Swap);
     }
 
     // Helpers
 
-    function _provideLiquidity(LP memory lpFixture) internal pure returns (uint128, uint256, uint256) {
+    function _provideLiquidity(
+        LP memory lpFixture
+    ) internal pure returns (uint128, uint256, uint256) {
         uint128 _liquidity = CMathLib.getLiquidityFromAmountsSqrtPriceX96(
             CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
             CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
@@ -142,12 +141,13 @@ contract CMathLibTest is Test {
             lpFixture.amount1
         );
 
-        (uint256 _amount0, uint256 _amount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
-            CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
-            CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
-            CMathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
-            _liquidity
-        );
+        (uint256 _amount0, uint256 _amount1) = CMathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
+                CMathLib.getSqrtPriceFromPrice(lpFixture.currentPrice),
+                CMathLib.getSqrtPriceFromPrice(lpFixture.priceUpper),
+                CMathLib.getSqrtPriceFromPrice(lpFixture.priceLower),
+                _liquidity
+            );
         return (_liquidity, _amount0, _amount1);
     }
 }

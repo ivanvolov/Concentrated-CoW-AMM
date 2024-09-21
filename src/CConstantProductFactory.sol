@@ -35,7 +35,12 @@ contract CConstantProductFactory {
      * @param token0 The first token traded by the AMM.
      * @param token1 The second token traded by the AMM.
      */
-    event Deployed(CConstantProduct indexed amm, address indexed owner, IERC20 token0, IERC20 token1);
+    event Deployed(
+        CConstantProduct indexed amm,
+        address indexed owner,
+        IERC20 token0,
+        IERC20 token1
+    );
     /**
      * @notice A CoW AMM stopped trading; no CoW Protocol orders can be settled
      * until trading is enabled again.
@@ -87,7 +92,11 @@ contract CConstantProductFactory {
         uint160 sqrtPriceLowerX96
     ) external returns (CConstantProduct amm) {
         address ammOwner = msg.sender;
-        amm = new CConstantProduct{salt: salt(ammOwner)}(settler, token0, token1);
+        amm = new CConstantProduct{salt: salt(ammOwner)}(
+            settler,
+            token0,
+            token1
+        );
         emit Deployed(amm, ammOwner, token0, token1);
         owner[amm] = ammOwner;
 
@@ -119,21 +128,30 @@ contract CConstantProductFactory {
         uint160 sqrtPriceUpperX96,
         uint160 sqrtPriceLowerX96
     ) internal returns (CConstantProduct.TradingParams memory data) {
-        uint160 currentSqrtPriceX96 =
-            priceOracle.getSqrtPriceX96(address(amm.token0()), address(amm.token1()), priceOracleData);
-        (uint256 amount0, uint256 amount1) = CMathLib.getAmountsFromLiquiditySqrtPriceX96(
-            currentSqrtPriceX96, sqrtPriceUpperX96, sqrtPriceLowerX96, liquidity
+        uint160 currentSqrtPriceX96 = priceOracle.getSqrtPriceX96(
+            address(amm.token0()),
+            address(amm.token1()),
+            priceOracleData
         );
+        (uint256 amount0, uint256 amount1) = CMathLib
+            .getAmountsFromLiquiditySqrtPriceX96(
+                currentSqrtPriceX96,
+                sqrtPriceUpperX96,
+                sqrtPriceLowerX96,
+                liquidity
+            );
         deposit(amm, amount0, amount1);
-        return CConstantProduct.TradingParams({
-            minTradedToken0: minTradedToken0,
-            priceOracle: priceOracle,
-            priceOracleData: priceOracleData,
-            appData: appData,
-            sqrtPriceDepositX96: currentSqrtPriceX96,
-            sqrtPriceUpperX96: sqrtPriceUpperX96,
-            sqrtPriceLowerX96: sqrtPriceLowerX96
-        });
+        return
+            CConstantProduct.TradingParams({
+                minTradedToken0: minTradedToken0,
+                priceOracle: priceOracle,
+                priceOracleData: priceOracleData,
+                appData: appData,
+                sqrtPriceDepositX96: currentSqrtPriceX96,
+                sqrtPriceUpperX96: sqrtPriceUpperX96,
+                sqrtPriceLowerX96: sqrtPriceLowerX96,
+                liquidity: liquidity
+            });
     }
 
     /**
@@ -155,17 +173,20 @@ contract CConstantProductFactory {
         bytes32 appData,
         uint160 sqrtPriceDepositX96,
         uint160 sqrtPriceUpperX96,
-        uint160 sqrtPriceLowerX96
+        uint160 sqrtPriceLowerX96,
+        uint128 liquidity
     ) external onlyOwner(amm) {
-        CConstantProduct.TradingParams memory data = CConstantProduct.TradingParams({
-            minTradedToken0: minTradedToken0,
-            priceOracle: priceOracle,
-            priceOracleData: priceOracleData,
-            appData: appData,
-            sqrtPriceDepositX96: sqrtPriceDepositX96,
-            sqrtPriceUpperX96: sqrtPriceUpperX96,
-            sqrtPriceLowerX96: sqrtPriceLowerX96
-        });
+        CConstantProduct.TradingParams memory data = CConstantProduct
+            .TradingParams({
+                minTradedToken0: minTradedToken0,
+                priceOracle: priceOracle,
+                priceOracleData: priceOracleData,
+                appData: appData,
+                sqrtPriceDepositX96: sqrtPriceDepositX96,
+                sqrtPriceUpperX96: sqrtPriceUpperX96,
+                sqrtPriceLowerX96: sqrtPriceLowerX96,
+                liquidity: liquidity
+            });
         _disableTrading(amm);
         _enableTrading(amm, data);
     }
@@ -184,9 +205,21 @@ contract CConstantProductFactory {
      * @param amount0 amount of AMM's token0 to withdraw
      * @param amount1 amount of AMM's token1 to withdraw
      */
-    function withdraw(CConstantProduct amm, uint256 amount0, uint256 amount1) external onlyOwner(amm) {
-        OZIERC20(address(amm.token0())).safeTransferFrom(address(amm), msg.sender, amount0);
-        OZIERC20(address(amm.token1())).safeTransferFrom(address(amm), msg.sender, amount1);
+    function withdraw(
+        CConstantProduct amm,
+        uint256 amount0,
+        uint256 amount1
+    ) external onlyOwner(amm) {
+        OZIERC20(address(amm.token0())).safeTransferFrom(
+            address(amm),
+            msg.sender,
+            amount0
+        );
+        OZIERC20(address(amm.token1())).safeTransferFrom(
+            address(amm),
+            msg.sender,
+            amount1
+        );
     }
 
     /**
@@ -209,7 +242,11 @@ contract CConstantProductFactory {
         IConditionalOrder.ConditionalOrderParams calldata params,
         bytes calldata, // offchainInput
         bytes32[] calldata // proof
-    ) external view returns (GPv2Order.Data memory order, bytes memory signature) {
+    )
+        external
+        view
+        returns (GPv2Order.Data memory order, bytes memory signature)
+    {
         // This contract mimics the interface of ConditionalCoW to talk to the
         // watchtower. In principle we'd still get a valid order if the handler
         // is set to any address. However, we create conditional orders on this
@@ -217,18 +254,24 @@ contract CConstantProductFactory {
         // user isn't trying to forward this order to the incorrect contract,
         // we revert with this error message.
         if (address(params.handler) != address(this)) {
-            revert IConditionalOrder.OrderNotValid("can only handle own orders");
+            revert IConditionalOrder.OrderNotValid(
+                "can only handle own orders"
+            );
         }
 
-        CConstantProduct.TradingParams memory tradingParams =
-            abi.decode(params.staticInput, (CConstantProduct.TradingParams));
+        CConstantProduct.TradingParams memory tradingParams = abi.decode(
+            params.staticInput,
+            (CConstantProduct.TradingParams)
+        );
 
         // Check that `getTradeableOrderWithSignature` is being called with
         // parameters that are currently enabled for trading on the AMM.
         // If the parameters are different, this order can be deleted on the
         // watchtower.
         if (amm.hash(tradingParams) != amm.tradingParamsHash()) {
-            revert IConditionalOrder.OrderNotValid("invalid trading parameters");
+            revert IConditionalOrder.OrderNotValid(
+                "invalid trading parameters"
+            );
         }
 
         // Note: the salt in params is ignored.
@@ -245,7 +288,11 @@ contract CConstantProductFactory {
      * @return The deterministic address at which this contract deploys a CoW
      * AMM for the specified input parameters.
      */
-    function ammDeterministicAddress(address ammOwner, IERC20 token0, IERC20 token1) external view returns (address) {
+    function ammDeterministicAddress(
+        address ammOwner,
+        IERC20 token0,
+        IERC20 token1
+    ) external view returns (address) {
         // https://eips.ethereum.org/EIPS/eip-1014#specification
         bytes32 create2Hash = keccak256(
             abi.encodePacked(
@@ -274,9 +321,21 @@ contract CConstantProductFactory {
      * @param amount0 amount of AMM's token0 to deposit
      * @param amount1 amount of AMM's token1 to deposit
      */
-    function deposit(CConstantProduct amm, uint256 amount0, uint256 amount1) public {
-        OZIERC20(address(amm.token0())).safeTransferFrom(msg.sender, address(amm), amount0);
-        OZIERC20(address(amm.token1())).safeTransferFrom(msg.sender, address(amm), amount1);
+    function deposit(
+        CConstantProduct amm,
+        uint256 amount0,
+        uint256 amount1
+    ) public {
+        OZIERC20(address(amm.token0())).safeTransferFrom(
+            msg.sender,
+            address(amm),
+            amount0
+        );
+        OZIERC20(address(amm.token1())).safeTransferFrom(
+            msg.sender,
+            address(amm),
+            amount1
+        );
     }
 
     /**
@@ -286,7 +345,10 @@ contract CConstantProductFactory {
      * @param tradingParams The parameters used by the CoW AMM to create the
      * order.
      */
-    function _enableTrading(CConstantProduct amm, CConstantProduct.TradingParams memory tradingParams) internal {
+    function _enableTrading(
+        CConstantProduct amm,
+        CConstantProduct.TradingParams memory tradingParams
+    ) internal {
         amm.enableTrading(tradingParams);
         // The salt is unused by this contract. External tools (for example the
         // watch tower) may expect that the salt doesn't repeat. However, there
@@ -299,7 +361,9 @@ contract CConstantProductFactory {
         emit ComposableCoW.ConditionalOrderCreated(
             address(amm),
             IConditionalOrder.ConditionalOrderParams(
-                IConditionalOrder(address(this)), conditionalOrderSalt, abi.encode(tradingParams)
+                IConditionalOrder(address(this)),
+                conditionalOrderSalt,
+                abi.encode(tradingParams)
             )
         );
     }
