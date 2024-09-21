@@ -71,23 +71,14 @@ contract CConstantProductFactory {
 
     /**
      * @notice Creates a new CoW AMM with the specified imput parameters.
-     * @param token0 The address of the first token in the pair.
-     * @param token1 The address of the second token in the pair.
-     * @param minTradedToken0 The minimum amount of token0 before the AMM
-     * attempts auto-rebalance.
-     * @param priceOracle The address of the price oracle to use for the AMM.
-     * @param priceOracleData The data to pass to the price oracle.
-     * @param appData The app data to pass to the AMM.
-     * @return amm The address of the newly deployed AMM.
      */
     function create(
         IERC20 token0,
         IERC20 token1,
         uint128 liquidity,
         uint256 minTradedToken0,
-        ICPriceOracle priceOracle,
-        bytes calldata priceOracleData,
         bytes32 appData,
+        uint160 sqrtPriceDepositX96,
         uint160 sqrtPriceUpperX96,
         uint160 sqrtPriceLowerX96
     ) external returns (CConstantProduct amm) {
@@ -106,9 +97,8 @@ contract CConstantProductFactory {
                 amm,
                 liquidity,
                 minTradedToken0,
-                priceOracle,
-                priceOracleData,
                 appData,
+                sqrtPriceDepositX96,
                 sqrtPriceUpperX96,
                 sqrtPriceLowerX96
             )
@@ -122,20 +112,14 @@ contract CConstantProductFactory {
         CConstantProduct amm,
         uint128 liquidity,
         uint256 minTradedToken0,
-        ICPriceOracle priceOracle,
-        bytes calldata priceOracleData,
         bytes32 appData,
+        uint160 sqrtPriceDepositX96,
         uint160 sqrtPriceUpperX96,
         uint160 sqrtPriceLowerX96
     ) internal returns (CConstantProduct.TradingParams memory data) {
-        uint160 currentSqrtPriceX96 = priceOracle.getSqrtPriceX96(
-            address(amm.token0()),
-            address(amm.token1()),
-            priceOracleData
-        );
         (uint256 amount0, uint256 amount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
-                currentSqrtPriceX96,
+                sqrtPriceDepositX96,
                 sqrtPriceUpperX96,
                 sqrtPriceLowerX96,
                 liquidity
@@ -144,10 +128,8 @@ contract CConstantProductFactory {
         return
             CConstantProduct.TradingParams({
                 minTradedToken0: minTradedToken0,
-                priceOracle: priceOracle,
-                priceOracleData: priceOracleData,
                 appData: appData,
-                sqrtPriceDepositX96: currentSqrtPriceX96,
+                sqrtPriceDepositX96: sqrtPriceDepositX96,
                 sqrtPriceUpperX96: sqrtPriceUpperX96,
                 sqrtPriceLowerX96: sqrtPriceLowerX96,
                 liquidity: liquidity
@@ -158,18 +140,10 @@ contract CConstantProductFactory {
      * @notice Change the parameters used for trading on the specified AMM. Only
      * a single order per AMM can be valid at a time, meaning that any previous
      * order stops being tradeable.
-     * @param amm The address of the AMM whose parameters to change.
-     * @param minTradedToken0 The minimum amount of token0 before the AMM
-     * attempts auto-rebalance.
-     * @param priceOracle The address of the price oracle to use for the AMM.
-     * @param priceOracleData The data to pass to the price oracle.
-     * @param appData The app data to pass to the AMM.
      */
     function updateParameters(
         CConstantProduct amm,
         uint256 minTradedToken0,
-        ICPriceOracle priceOracle,
-        bytes calldata priceOracleData,
         bytes32 appData,
         uint160 sqrtPriceDepositX96,
         uint160 sqrtPriceUpperX96,
@@ -179,8 +153,6 @@ contract CConstantProductFactory {
         CConstantProduct.TradingParams memory data = CConstantProduct
             .TradingParams({
                 minTradedToken0: minTradedToken0,
-                priceOracle: priceOracle,
-                priceOracleData: priceOracleData,
                 appData: appData,
                 sqrtPriceDepositX96: sqrtPriceDepositX96,
                 sqrtPriceUpperX96: sqrtPriceUpperX96,
@@ -220,64 +192,6 @@ contract CConstantProductFactory {
             msg.sender,
             amount1
         );
-    }
-
-    /**
-     * @notice This function exists to let the watchtower off-chain service
-     * automatically create AMM orders and post them on the orderbook. It
-     * outputs an order for the input AMM together with a valid signature.
-     * @dev Some parameters are unused as they refer to features of
-     * ComposableCoW that aren't implemented in this contract. They are still
-     * needed to let the watchtower interact with this contract in the same way
-     * as ComposableCoW.
-     * @param amm owner of the order.
-     * @param params `ConditionalOrderParams` for the order; precisely, the
-     * handler must be this contract, the salt can be any value, and the static
-     * input must be the current trading parameters of the AMM.
-     * @return order discrete order for submitting to CoW Protocol API
-     * @return signature for submitting to CoW Protocol API
-     */
-    function getTradeableOrderWithSignature(
-        CConstantProduct amm,
-        IConditionalOrder.ConditionalOrderParams calldata params,
-        bytes calldata, // offchainInput
-        bytes32[] calldata // proof
-    )
-        external
-        view
-        returns (GPv2Order.Data memory order, bytes memory signature)
-    {
-        // This contract mimics the interface of ConditionalCoW to talk to the
-        // watchtower. In principle we'd still get a valid order if the handler
-        // is set to any address. However, we create conditional orders on this
-        // contract with this contract as the handler, so to make sure that the
-        // user isn't trying to forward this order to the incorrect contract,
-        // we revert with this error message.
-        if (address(params.handler) != address(this)) {
-            revert IConditionalOrder.OrderNotValid(
-                "can only handle own orders"
-            );
-        }
-
-        CConstantProduct.TradingParams memory tradingParams = abi.decode(
-            params.staticInput,
-            (CConstantProduct.TradingParams)
-        );
-
-        // Check that `getTradeableOrderWithSignature` is being called with
-        // parameters that are currently enabled for trading on the AMM.
-        // If the parameters are different, this order can be deleted on the
-        // watchtower.
-        if (amm.hash(tradingParams) != amm.tradingParamsHash()) {
-            revert IConditionalOrder.OrderNotValid(
-                "invalid trading parameters"
-            );
-        }
-
-        // Note: the salt in params is ignored.
-
-        order = amm.getTradeableOrder(tradingParams);
-        signature = abi.encode(order, tradingParams);
     }
 
     /**

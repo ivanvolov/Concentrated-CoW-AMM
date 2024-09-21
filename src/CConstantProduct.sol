@@ -29,12 +29,6 @@ contract CConstantProduct is IERC1271 {
         /// The minimum amount of token0 that needs to be traded for an order
         /// to be created on getTradeableOrder.
         uint256 minTradedToken0;
-        /// An onchain source for the price of the two tokens. The price should
-        /// be expressed in terms of amount of token0 per amount of token1.
-        ICPriceOracle priceOracle;
-        /// The data that needs to be provided to the price oracle to retrieve
-        /// the relative price of the two tokens.
-        bytes priceOracleData;
         /// The app data that must be used in the order.
         /// See `GPv2Order.Data` for more information on the app data.
         bytes32 appData;
@@ -251,122 +245,13 @@ contract CConstantProduct is IERC1271 {
             revert OrderDoesNotMatchMessageHash();
         }
 
-        requireMatchingCommitment(orderHash, tradingParams, order);
+        requireMatchingCommitment(orderHash);
 
         verify(tradingParams, order);
 
         // A signature is valid according to EIP-1271 if this function returns
         // its selector as the so-called "magic value".
         return this.isValidSignature.selector;
-    }
-
-    /**
-     * @notice The order returned by this function is the order that needs to be
-     * executed for the price on this AMM to match that of the reference pair.
-     * @param tradingParams the trading parameters of all discrete orders cut
-     * from this AMM
-     * @return order the tradeable order for submission to the CoW Protocol API
-     */
-    function getTradeableOrder(
-        TradingParams memory tradingParams
-    ) public view returns (GPv2Order.Data memory order) {
-        (
-            uint256 sellAmount,
-            uint256 buyAmount,
-            IERC20 sellToken,
-            IERC20 buyToken
-        ) = getTargetAmounts(tradingParams);
-
-        uint256 tradedAmountToken0 = sellToken == token0
-            ? sellAmount
-            : buyAmount;
-
-        if (tradedAmountToken0 < tradingParams.minTradedToken0) {
-            revertPollAtNextBlock("traded amount too small");
-        }
-
-        order = GPv2Order.Data(
-            sellToken,
-            buyToken,
-            GPv2Order.RECEIVER_SAME_AS_OWNER,
-            sellAmount,
-            buyAmount,
-            Utils.validToBucket(MAX_ORDER_DURATION),
-            tradingParams.appData,
-            0,
-            GPv2Order.KIND_SELL,
-            false,
-            GPv2Order.BALANCE_ERC20,
-            GPv2Order.BALANCE_ERC20
-        );
-    }
-
-    function getTargetSqrtPriceX96(
-        TradingParams memory tradingParams
-    ) private view returns (uint160) {
-        uint160 targetSqrtPriceX96 = tradingParams.priceOracle.getSqrtPriceX96(
-            address(token0),
-            address(token1),
-            tradingParams.priceOracleData
-        );
-
-        if (targetSqrtPriceX96 > tradingParams.sqrtPriceUpperX96) {
-            return tradingParams.sqrtPriceUpperX96;
-        }
-        if (targetSqrtPriceX96 < tradingParams.sqrtPriceLowerX96) {
-            return tradingParams.sqrtPriceLowerX96;
-        }
-        return targetSqrtPriceX96;
-    }
-
-    function getTargetAmounts(
-        TradingParams memory tradingParams
-    ) private view returns (uint256, uint256, IERC20, IERC20) {
-        uint160 targetSqrtPriceX96 = getTargetSqrtPriceX96(tradingParams);
-        (uint256 selfReserve0, uint256 selfReserve1) = (
-            token0.balanceOf(address(this)),
-            token1.balanceOf(address(this))
-        );
-
-        uint160 _lastSqrtPriceX96 = lastSqrtPriceX96 != 0
-            ? lastSqrtPriceX96
-            : tradingParams.sqrtPriceDepositX96;
-
-        uint128 liquidity = CMathLib.getLiquidityFromAmountsSqrtPriceX96(
-            _lastSqrtPriceX96,
-            tradingParams.sqrtPriceUpperX96,
-            tradingParams.sqrtPriceLowerX96,
-            selfReserve0,
-            selfReserve1
-        );
-
-        (uint256 newAmount0, uint256 newAmount1) = CMathLib
-            .getAmountsFromLiquiditySqrtPriceX96(
-                targetSqrtPriceX96,
-                tradingParams.sqrtPriceUpperX96,
-                tradingParams.sqrtPriceLowerX96,
-                liquidity
-            );
-
-        if (targetSqrtPriceX96 > _lastSqrtPriceX96) {
-            // sell token0 for token1
-
-            return (
-                selfReserve0 - newAmount0,
-                newAmount1 - selfReserve1,
-                token0,
-                token1
-            );
-        } else {
-            // sell token1 for token0
-
-            return (
-                selfReserve1 - newAmount1,
-                newAmount0 - selfReserve0,
-                token1,
-                token0
-            );
-        }
     }
 
     /**
@@ -380,19 +265,6 @@ contract CConstantProduct is IERC1271 {
         TradingParams memory tradingParams,
         GPv2Order.Data memory order
     ) public view {
-        IERC20 sellToken = token0;
-        IERC20 buyToken = token1;
-        if (order.sellToken != sellToken) {
-            if (order.sellToken != buyToken) {
-                revert IConditionalOrder.OrderNotValid("invalid sell token");
-            }
-            (sellToken, buyToken) = (buyToken, sellToken);
-        }
-
-        if (order.buyToken != buyToken) {
-            revert IConditionalOrder.OrderNotValid("invalid buy token");
-        }
-
         if (order.receiver != GPv2Order.RECEIVER_SAME_AS_OWNER) {
             revert IConditionalOrder.OrderNotValid(
                 "receiver must be zero address"
@@ -425,10 +297,6 @@ contract CConstantProduct is IERC1271 {
         // These are the checks needed to satisfy the conditions on in/out
         // amounts for a constant-product curve AMM.
 
-        (uint256 sellAmount, uint256 buyAmount, , ) = getTargetAmounts(
-            tradingParams
-        );
-
         uint256 tokenAmountOut = calcOutGivenIn(
             tradingParams.liquidity,
             order.buyAmount,
@@ -439,9 +307,9 @@ contract CConstantProduct is IERC1271 {
             revert IConditionalOrder.OrderNotValid("received amount too low");
         }
 
-        uint256 tradedAmountToken0 = sellToken == token0
-            ? sellAmount
-            : buyAmount;
+        uint256 tradedAmountToken0 = order.sellToken == token0
+            ? order.sellAmount
+            : order.buyAmount;
         if (tradedAmountToken0 < tradingParams.minTradedToken0) {
             revert IConditionalOrder.OrderNotValid("traded amount too small");
         }
@@ -483,8 +351,14 @@ contract CConstantProduct is IERC1271 {
             revert TradingParamsDoNotMatchHash();
         }
 
-        uint160 targetSqrtPriceX96 = getTargetSqrtPriceX96(tradingParams);
-        lastSqrtPriceX96 = targetSqrtPriceX96;
+        uint160 currentSqrtPriceX96 = CMathLib.getSqrtPriceFromAmounts(
+            tradingParams.sqrtPriceUpperX96,
+            tradingParams.sqrtPriceLowerX96,
+            tradingParams.liquidity,
+            token0.balanceOf(address(this)),
+            token1.balanceOf(address(this))
+        );
+        lastSqrtPriceX96 = currentSqrtPriceX96;
     }
 
     function commitment() public view returns (bytes32 value) {
@@ -540,27 +414,16 @@ contract CConstantProduct is IERC1271 {
      * `getTradeableOrder` don't match those of the input order.
      * @param orderHash the hash of the current order as defined by the
      * `GPv2Order` library.
-     * @param tradingParams the trading parameters of all discrete orders cut
-     * from this AMM
-     * @param order `GPv2Order.Data` of a discrete order to be verified
      */
-    function requireMatchingCommitment(
-        bytes32 orderHash,
-        TradingParams memory tradingParams,
-        GPv2Order.Data memory order
-    ) internal view {
+    function requireMatchingCommitment(bytes32 orderHash) internal view {
         bytes32 committedOrderHash = commitment();
 
         if (orderHash != committedOrderHash) {
             if (committedOrderHash != EMPTY_COMMITMENT) {
                 revert OrderDoesNotMatchCommitmentHash();
             }
-            GPv2Order.Data memory computedOrder = getTradeableOrder(
-                tradingParams
-            );
-            if (!matchFreeOrderParams(order, computedOrder)) {
-                revert OrderDoesNotMatchDefaultTradeableOrder();
-            }
+
+            //TODO: removed default order commitment match, think about if it is safe
         }
     }
 
