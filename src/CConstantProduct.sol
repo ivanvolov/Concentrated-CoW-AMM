@@ -42,6 +42,8 @@ contract CConstantProduct is IERC1271 {
     }
 
     uint160 public lastSqrtPriceX96;
+    uint256 public lastBalance0;
+    uint256 public lastBalance1;
 
     /**
      * @notice The largest possible duration of any AMM order, starting from the
@@ -199,6 +201,8 @@ contract CConstantProduct is IERC1271 {
     ) external onlyManager {
         bytes32 _tradingParamsHash = hash(tradingParams);
         tradingParamsHash = _tradingParamsHash;
+        lastBalance0 = IERC20(token0).balanceOf(address(this));
+        lastBalance1 = IERC20(token1).balanceOf(address(this));
         emit TradingEnabled(_tradingParamsHash, tradingParams);
     }
 
@@ -351,14 +355,29 @@ contract CConstantProduct is IERC1271 {
             revert TradingParamsDoNotMatchHash();
         }
 
-        uint160 currentSqrtPriceX96 = CMathLib.getSqrtPriceFromAmounts(
-            tradingParams.sqrtPriceUpperX96,
-            tradingParams.sqrtPriceLowerX96,
-            tradingParams.liquidity,
-            token0.balanceOf(address(this)),
-            token1.balanceOf(address(this))
-        );
-        lastSqrtPriceX96 = currentSqrtPriceX96;
+        uint256 balance0 = IERC20(token0).balanceOf(address(this));
+        if (balance0 > lastBalance0) {
+            // tokenIn == token0
+            lastSqrtPriceX96 = CMathLib.getNextSqrtPriceX96FromAmount0(
+                lastSqrtPriceX96,
+                tradingParams.liquidity,
+                balance0 - lastBalance0
+            );
+
+            lastBalance0 = IERC20(token0).balanceOf(address(this));
+            lastBalance1 = IERC20(token1).balanceOf(address(this));
+        } else {
+            uint256 balance1 = IERC20(token1).balanceOf(address(this));
+            // tokenIn == token1
+            lastSqrtPriceX96 = CMathLib.getNextSqrtPriceX96FromAmount1(
+                lastSqrtPriceX96,
+                tradingParams.liquidity,
+                balance1 - lastBalance1
+            );
+
+            lastBalance0 = IERC20(token0).balanceOf(address(this));
+            lastBalance1 = IERC20(token1).balanceOf(address(this));
+        }
     }
 
     function commitment() public view returns (bytes32 value) {
@@ -423,7 +442,7 @@ contract CConstantProduct is IERC1271 {
                 revert OrderDoesNotMatchCommitmentHash();
             }
 
-            //TODO: removed default order commitment match, think about if it is safe
+            //TODO: I removed default order commitment match, think about if it is safe.
         }
     }
 

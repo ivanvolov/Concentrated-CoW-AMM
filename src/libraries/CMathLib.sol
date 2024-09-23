@@ -17,18 +17,39 @@ import {LiquidityAmounts} from "@forks/uniswap-v4/LiquidityAmounts.sol";
 library CMathLib {
     using FixedPointMathLib for uint256;
 
+    function getNextSqrtPriceX96FromAmount0(
+        uint160 sqrtPriceCurrentX96,
+        uint128 liquidity,
+        uint256 amount0
+    ) internal pure returns (uint160) {
+        return
+            toUint160(
+                uint256(liquidity).mul(uint256(sqrtPriceCurrentX96)).div(
+                    uint256(liquidity) +
+                        amount0.mul(uint256(sqrtPriceCurrentX96)).div(2 ** 96)
+                )
+            );
+    }
+
+    function getNextSqrtPriceX96FromAmount1(
+        uint160 sqrtPriceCurrentX96,
+        uint128 liquidity,
+        uint256 amount1
+    ) internal pure returns (uint160) {
+        uint160 sqrtPriceDeltaX96 = toUint160((amount1 * 2 ** 96) / liquidity);
+        return sqrtPriceCurrentX96 + sqrtPriceDeltaX96;
+    }
+
     function getSwapAmountsFromAmount0(
         uint160 sqrtPriceCurrentX96,
         uint128 liquidity,
         uint256 amount0
     ) internal pure returns (uint256, uint256) {
-        uint160 sqrtPriceNextX96 = toUint160(
-            uint256(liquidity).mul(uint256(sqrtPriceCurrentX96)).div(
-                uint256(liquidity) +
-                    amount0.mul(uint256(sqrtPriceCurrentX96)).div(2 ** 96)
-            )
+        uint160 sqrtPriceNextX96 = getNextSqrtPriceX96FromAmount0(
+            sqrtPriceCurrentX96,
+            liquidity,
+            amount0
         );
-
         return (
             LiquidityAmounts.getAmount0ForLiquidity(
                 sqrtPriceNextX96,
@@ -48,8 +69,11 @@ library CMathLib {
         uint128 liquidity,
         uint256 amount1
     ) internal pure returns (uint256, uint256) {
-        uint160 sqrtPriceDeltaX96 = toUint160((amount1 * 2 ** 96) / liquidity);
-        uint160 sqrtPriceNextX96 = sqrtPriceCurrentX96 + sqrtPriceDeltaX96;
+        uint160 sqrtPriceNextX96 = getNextSqrtPriceX96FromAmount1(
+            sqrtPriceCurrentX96,
+            liquidity,
+            amount1
+        );
 
         return (
             LiquidityAmounts.getAmount0ForLiquidity(
@@ -63,16 +87,6 @@ library CMathLib {
                 liquidity
             )
         );
-    }
-
-    function getSqrtPriceFromAmounts(
-        uint160 sqrtPriceUpperX96,
-        uint160 sqrtPriceLowerX96,
-        uint128 liquidity,
-        uint256 amount1,
-        uint256 amount0
-    ) internal pure returns (uint160) {
-        //TODO: implement
     }
 
     function getLiquidityFromAmountsSqrtPriceX96(

@@ -108,6 +108,7 @@ contract CConstantProductFactory {
     /**
      * @notice This function is to avoid stack too deep.
      */
+    //TODO: remove this cause no stack to deep
     function getDataAndDeposit(
         CConstantProduct amm,
         uint128 liquidity,
