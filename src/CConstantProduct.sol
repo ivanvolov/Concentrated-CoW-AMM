@@ -12,6 +12,8 @@ import {ISettlement} from "./interfaces/ISettlement.sol";
 import {IWatchtowerCustomErrors} from "./interfaces/IWatchtowerCustomErrors.sol";
 import {CMathLib} from "./libraries/CMathLib.sol";
 
+import "forge-std/console.sol";
+
 /**
  * @title Concentrated CoW AMM
  * @author IVikkk
@@ -24,8 +26,8 @@ contract CConstantProduct is IERC1271, ICConstantProduct {
     using SafeERC20 for OZIERC20;
     using GPv2Order for GPv2Order.Data;
 
-    uint128 public lastLiquidity;
     uint160 public lastSqrtPriceX96;
+    uint128 public lastLiquidity;
     uint256 public lastBalance0;
     uint256 public lastBalance1;
 
@@ -188,6 +190,7 @@ contract CConstantProduct is IERC1271, ICConstantProduct {
         lastBalance0 = IERC20(token0).balanceOf(address(this));
         lastBalance1 = IERC20(token1).balanceOf(address(this));
         lastLiquidity = tradingParams.liquidity;
+        lastSqrtPriceX96 = tradingParams.sqrtPriceDepositX96;
         emit TradingEnabled(_tradingParamsHash, tradingParams);
     }
 

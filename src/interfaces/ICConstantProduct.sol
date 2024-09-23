@@ -27,6 +27,8 @@ interface ICConstantProduct {
 
     function lastLiquidity() external view returns (uint128);
 
+    function lastSqrtPriceX96() external view returns (uint160);
+
     function MAX_ORDER_DURATION() external view returns (uint32);
 
     function calcOutGivenIn(

@@ -2,9 +2,9 @@
 pragma solidity ^0.8.24;
 
 import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.t.sol";
-import {CConstantProduct, GPv2Order, IERC20, TradingParams} from "src/CConstantProduct.sol";
+import {CConstantProduct, GPv2Order, IERC20} from "src/CConstantProduct.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
-import {TradingParams} from "src/interfaces/ICConstantProduct.sol";
+import {TradingParams, ICConstantProduct} from "src/interfaces/ICConstantProduct.sol";
 import {CMathLib} from "src/libraries/CMathLib.sol";
 import {CCoWHelper} from "src/CCoWHelper.sol";
 
@@ -20,14 +20,9 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         bytes signature;
     }
 
-    ISettlement internal solutionSettler =
-        ISettlement(DEFAULT_SOLUTION_SETTLER);
-    CConstantProduct internal constantProduct;
-    CCoWHelper internal helper;
-
     address internal vaultRelayer = makeAddr("vault relayer");
-    address private USDC = makeAddr("USDC");
-    address private WETH = makeAddr("WETH");
+    address USDC = makeAddr("USDC");
+    address WETH = makeAddr("WETH");
     address private DEFAULT_PAIR = makeAddr("default USDC/WETH pair");
     address private DEFAULT_RECEIVER = makeAddr("default receiver");
     address private DEFAULT_SOLUTION_SETTLER = makeAddr("settlement contract");
@@ -35,6 +30,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     bytes32 private DEFAULT_COMMITMENT = keccak256(bytes("order hash"));
     bytes32 private DEFAULT_DOMAIN_SEPARATOR =
         keccak256(bytes("domain separator hash"));
+    bytes DEFAULT_PRICE_ORACLE_DATA = bytes("some price oracle data");
 
     // --- DEFAULT SQRT PRICES ---
     uint160 DEFAULT_PRICE_UPPER_X96 =
@@ -50,6 +46,12 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     // --- DEFAULT LIQUIDITY ---
     uint128 DEFAULT_LIQUIDITY = 1518129116516325613903;
     uint256 DEFAULT_AMOUNT_IN_SWAP = 1 ether / 2;
+    uint256 DEFAULT_AMOUNT_IN_SWAP_OTHER_SIDE = 5000 ether / 2;
+
+    ISettlement internal solutionSettler =
+        ISettlement(DEFAULT_SOLUTION_SETTLER);
+    CConstantProduct internal constantProduct;
+    CCoWHelper internal helper;
 
     function setUp() public virtual override(BaseComposableCoWTest) {
         super.setUp();
@@ -60,13 +62,12 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         );
         setUpSolutionSettler();
         setUpAmmDeployment(constantProductAddress);
-        // constantProduct = new CConstantProduct(
-        //     solutionSettler,
-        //     IERC20(USDC),
-        //     IERC20(WETH)
-        // );
-
-        // helper = new CCoWHelper("");
+        constantProduct = new CConstantProduct(
+            solutionSettler,
+            IERC20(WETH),
+            IERC20(USDC)
+        );
+        helper = new CCoWHelper(DEFAULT_APPDATA);
     }
 
     function setUpSolutionSettler() internal {
@@ -142,6 +143,14 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         );
     }
 
+    function setUpDefaultDeposit() internal {
+        vm.store(
+            address(constantProduct),
+            bytes32(uint256(0)),
+            bytes32(uint256(DEFAULT_PRICE_CURRENT_X96))
+        );
+    }
+
     function defaultSignatureAndHashes()
         internal
         returns (SignatureData memory out)
@@ -157,13 +166,15 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     // order is valid for the default commitment.
     // This function use default AMOUNT IN
     function checkedGetTradeableOrder(
-        TradingParams memory tradingParams
+        TradingParams memory tradingParams,
+        address tokenIn,
+        uint256 amountIn
     ) internal view returns (GPv2Order.Data memory order) {
         (order, , , ) = helper.order(
             tradingParams,
             address(constantProduct),
-            WETH,
-            DEFAULT_AMOUNT_IN_SWAP
+            tokenIn,
+            amountIn
         );
         constantProduct.verify(tradingParams, order);
     }
@@ -196,11 +207,11 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             constantProductAddress,
             address(this)
         );
-        // setUpTokenForDeployment(
-        //     IERC20(WETH),
-        //     constantProductAddress,
-        //     address(this)
-        // );
+        setUpTokenForDeployment(
+            IERC20(WETH),
+            constantProductAddress,
+            address(this)
+        );
     }
 
     function setUpTokenForDeployment(
@@ -208,13 +219,12 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         address constantProductAddress,
         address owner
     ) internal {
-        console.log("!");
-        console.log(">", address(solutionSettler));
-        console.log(">", address(vaultRelayer));
-        console.log(">", address(solutionSettler.vaultRelayer()));
-        console.log("!");
-        // mockSafeApprove(token, constantProductAddress, vaultRelayer);
-        // mockSafeApprove(token, constantProductAddress, owner);
+        mockSafeApprove(
+            token,
+            constantProductAddress,
+            solutionSettler.vaultRelayer()
+        );
+        mockSafeApprove(token, constantProductAddress, owner);
     }
 
     function mockSafeApprove(
@@ -222,8 +232,8 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         address owner,
         address spender
     ) internal {
-        // mockZeroAllowance(token, owner, spender);
-        // mockApprove(token, spender);
+        mockZeroAllowance(token, owner, spender);
+        mockApprove(token, spender);
     }
 
     function mockApprove(IERC20 token, address spender) internal {
