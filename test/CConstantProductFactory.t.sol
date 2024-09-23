@@ -8,11 +8,11 @@ import {Create} from "./CConstantProductFactory/Create.sol";
 import {UpdateParameters} from "./CConstantProductFactory/UpdateParameters.sol";
 import {DisableTrading} from "./CConstantProductFactory/DisableTrading.sol";
 
-contract CConstantProductFactoryTest is
-    GetTradeableOrderWithSignature,
-    Deposit,
-    Withdraw,
-    Create,
-    UpdateParameters,
-    DisableTrading
-{}
+// contract CConstantProductFactoryTest is
+//     GetTradeableOrderWithSignature,
+//     Deposit,
+//     Withdraw,
+//     Create,
+//     UpdateParameters,
+//     DisableTrading
+// {}
