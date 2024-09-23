@@ -35,7 +35,7 @@ abstract contract UpdateParameters is CConstantProductFactoryTestHarness {
     // }
     // function testUpdatesTradingParamsHash() public {
     //     CConstantProduct amm = setupInitialAMM();
-    //     CConstantProduct.TradingParams memory params = CConstantProduct.TradingParams({
+    //     TradingParams memory params = TradingParams({
     //         minTradedToken0: newMinTradedToken0,
     //         priceOracle: newPriceOracle,
     //         priceOracleData: newPriceOracleData,
@@ -60,7 +60,7 @@ abstract contract UpdateParameters is CConstantProductFactoryTestHarness {
     // }
     // function testUpdatingEmitsExpectedEvents() public {
     //     CConstantProduct amm = setupInitialAMM();
-    //     CConstantProduct.TradingParams memory params = CConstantProduct.TradingParams({
+    //     TradingParams memory params = TradingParams({
     //         minTradedToken0: newMinTradedToken0,
     //         priceOracle: newPriceOracle,
     //         priceOracleData: newPriceOracleData,

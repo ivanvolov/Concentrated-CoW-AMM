@@ -14,7 +14,7 @@ abstract contract GetTradeableOrderWithSignature is
     using GPv2Order for GPv2Order.Data;
 
     // function testRevertsIfHandlerIsNotFactory() public {
-    //     CConstantProduct.TradingParams memory tradingParams = getDefaultTradingParams();
+    //     TradingParams memory tradingParams = getDefaultTradingParams();
     //     IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams(
     //         IConditionalOrder(makeAddr("GetTradeableOrderWithSignature: not the factory")),
     //         keccak256("some salt"),
@@ -26,13 +26,13 @@ abstract contract GetTradeableOrderWithSignature is
     // }
 
     // function testRevertsIfTradingWithDifferentParameters() public {
-    //     CConstantProduct.TradingParams memory tradingParams = getDefaultTradingParams();
+    //     TradingParams memory tradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
 
     //     constantProduct.enableTrading(tradingParams);
 
     //     bytes32 hashEnabledParams = constantProduct.hash(tradingParams);
-    //     CConstantProduct.TradingParams memory modifiedParams = getDefaultTradingParams();
+    //     TradingParams memory modifiedParams = getDefaultTradingParams();
     //     modifiedParams.appData = keccak256("GetTradeableOrderWithSignature: any different app data");
     //     bytes32 hashModifiedParams = constantProduct.hash(modifiedParams);
     //     require(hashEnabledParams != hashModifiedParams, "Incorrect test setup");
@@ -41,7 +41,7 @@ abstract contract GetTradeableOrderWithSignature is
     // }
 
     // function testOrderMatchesTradeableOrder() public {
-    //     CConstantProduct.TradingParams memory tradingParams = getDefaultTradingParams();
+    //     TradingParams memory tradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
 
     //     constantProduct.enableTrading(tradingParams);
@@ -52,7 +52,7 @@ abstract contract GetTradeableOrderWithSignature is
     // }
 
     // function testSignatureIsValid() public {
-    //     CConstantProduct.TradingParams memory tradingParams = getDefaultTradingParams();
+    //     TradingParams memory tradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
 
     //     constantProduct.enableTrading(tradingParams);

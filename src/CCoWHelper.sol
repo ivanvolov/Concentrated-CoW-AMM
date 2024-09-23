@@ -21,12 +21,8 @@ contract CCoWHelper {
     /// @notice The app data used by this helper's factory.
     bytes32 internal immutable _APP_DATA;
 
-    // solhint-disable-next-line style-guide-casing
-    address public immutable factory;
-
-    constructor(address factory_) {
-        factory = factory_;
-        _APP_DATA = "";
+    constructor(bytes32 APP_DATA) {
+        _APP_DATA = APP_DATA;
     }
 
     function order(

@@ -73,7 +73,7 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //     setUpOracleResponse(
     //         DEFAULT_NEW_PRICE_X96, address(priceOracle), address(DAI), address(WETH), DEFAULT_PRICE_ORACLE_DATA
     //     );
-    //     CConstantProduct.TradingParams memory data = CConstantProduct.TradingParams({
+    //     TradingParams memory data = TradingParams({
     //         minTradedToken0: minTradedToken0,
     //         priceOracle: priceOracle,
     //         priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
@@ -136,7 +136,7 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //     GPv2Order.Data memory order,
     //     bytes memory bundleBytes,
     //     bytes4 _revertSelector,
-    //     CConstantProduct.TradingParams memory tradingParams
+    //     TradingParams memory tradingParams
     // ) internal {
     //     // Generate counter party's order
     //     GPv2Order.Data memory counterOrder = GPv2Order.Data({

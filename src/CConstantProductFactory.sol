@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {ComposableCoW, IConditionalOrder} from "lib/composable-cow/src/ComposableCoW.sol";
 import {SafeERC20} from "lib/openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {CConstantProduct, IERC20, OZIERC20, ISettlement, GPv2Order} from "./CConstantProduct.sol";
+import {TradingParams} from "./interfaces/ICConstantProduct.sol";
 import {CMathLib} from "./libraries/CMathLib.sol";
 
 /**
@@ -117,7 +118,7 @@ contract CConstantProductFactory {
         uint160 sqrtPriceDepositX96,
         uint160 sqrtPriceUpperX96,
         uint160 sqrtPriceLowerX96
-    ) internal returns (CConstantProduct.TradingParams memory data) {
+    ) internal returns (TradingParams memory data) {
         (uint256 amount0, uint256 amount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
                 sqrtPriceDepositX96,
@@ -127,7 +128,7 @@ contract CConstantProductFactory {
             );
         deposit(amm, amount0, amount1);
         return
-            CConstantProduct.TradingParams({
+            TradingParams({
                 minTradedToken0: minTradedToken0,
                 appData: appData,
                 sqrtPriceDepositX96: sqrtPriceDepositX96,
@@ -151,15 +152,14 @@ contract CConstantProductFactory {
         uint160 sqrtPriceLowerX96,
         uint128 liquidity
     ) external onlyOwner(amm) {
-        CConstantProduct.TradingParams memory data = CConstantProduct
-            .TradingParams({
-                minTradedToken0: minTradedToken0,
-                appData: appData,
-                sqrtPriceDepositX96: sqrtPriceDepositX96,
-                sqrtPriceUpperX96: sqrtPriceUpperX96,
-                sqrtPriceLowerX96: sqrtPriceLowerX96,
-                liquidity: liquidity
-            });
+        TradingParams memory data = TradingParams({
+            minTradedToken0: minTradedToken0,
+            appData: appData,
+            sqrtPriceDepositX96: sqrtPriceDepositX96,
+            sqrtPriceUpperX96: sqrtPriceUpperX96,
+            sqrtPriceLowerX96: sqrtPriceLowerX96,
+            liquidity: liquidity
+        });
         _disableTrading(amm);
         _enableTrading(amm, data);
     }
@@ -262,7 +262,7 @@ contract CConstantProductFactory {
      */
     function _enableTrading(
         CConstantProduct amm,
-        CConstantProduct.TradingParams memory tradingParams
+        TradingParams memory tradingParams
     ) internal {
         amm.enableTrading(tradingParams);
         // The salt is unused by this contract. External tools (for example the

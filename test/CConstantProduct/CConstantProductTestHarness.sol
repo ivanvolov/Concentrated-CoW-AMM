@@ -4,7 +4,11 @@ pragma solidity ^0.8.24;
 import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.t.sol";
 import {CConstantProduct, GPv2Order, IERC20, TradingParams} from "src/CConstantProduct.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
+import {TradingParams} from "src/interfaces/ICConstantProduct.sol";
 import {CMathLib} from "src/libraries/CMathLib.sol";
+import {CCoWHelper} from "src/CCoWHelper.sol";
+
+import "forge-std/console.sol";
 
 abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     using GPv2Order for GPv2Order.Data;
@@ -15,6 +19,11 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         TradingParams tradingParams;
         bytes signature;
     }
+
+    ISettlement internal solutionSettler =
+        ISettlement(DEFAULT_SOLUTION_SETTLER);
+    CConstantProduct internal constantProduct;
+    CCoWHelper internal helper;
 
     address internal vaultRelayer = makeAddr("vault relayer");
     address private USDC = makeAddr("USDC");
@@ -27,22 +36,20 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     bytes32 private DEFAULT_DOMAIN_SEPARATOR =
         keccak256(bytes("domain separator hash"));
 
+    // --- DEFAULT SQRT PRICES ---
     uint160 DEFAULT_PRICE_UPPER_X96 =
         CMathLib.getSqrtPriceFromPrice(5500 ether);
     uint160 DEFAULT_PRICE_LOWER_X96 =
         CMathLib.getSqrtPriceFromPrice(4545 ether);
-
     uint160 DEFAULT_PRICE_CURRENT_X96 =
         CMathLib.getSqrtPriceFromPrice(5000 ether);
     uint160 DEFAULT_NEW_PRICE_X96 = CMathLib.getSqrtPriceFromPrice(4565 ether);
     uint160 DEFAULT_NEW_PRICE_OTHER_SIDE_X96 =
         CMathLib.getSqrtPriceFromPrice(5499 ether);
 
+    // --- DEFAULT LIQUIDITY ---
     uint128 DEFAULT_LIQUIDITY = 1518129116516325613903;
-
-    ISettlement internal solutionSettler =
-        ISettlement(DEFAULT_SOLUTION_SETTLER);
-    CConstantProduct internal constantProduct;
+    uint256 DEFAULT_AMOUNT_IN_SWAP = 1 ether / 2;
 
     function setUp() public virtual override(BaseComposableCoWTest) {
         super.setUp();
@@ -53,11 +60,13 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         );
         setUpSolutionSettler();
         setUpAmmDeployment(constantProductAddress);
-        constantProduct = new CConstantProduct(
-            solutionSettler,
-            IERC20(USDC),
-            IERC20(WETH)
-        );
+        // constantProduct = new CConstantProduct(
+        //     solutionSettler,
+        //     IERC20(USDC),
+        //     IERC20(WETH)
+        // );
+
+        // helper = new CCoWHelper("");
     }
 
     function setUpSolutionSettler() internal {
@@ -81,10 +90,10 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     function getDefaultTradingParams()
         internal
         view
-        returns (CConstantProduct.TradingParams memory)
+        returns (TradingParams memory)
     {
         return
-            CConstantProduct.TradingParams(
+            TradingParams(
                 0,
                 DEFAULT_APPDATA,
                 DEFAULT_PRICE_CURRENT_X96,
@@ -97,7 +106,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     function setUpDefaultTradingParams()
         internal
         view
-        returns (CConstantProduct.TradingParams memory)
+        returns (TradingParams memory)
     {
         return getDefaultTradingParams();
     }
@@ -137,8 +146,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         internal
         returns (SignatureData memory out)
     {
-        CConstantProduct.TradingParams
-            memory tradingParams = getDefaultTradingParams();
+        TradingParams memory tradingParams = getDefaultTradingParams();
         GPv2Order.Data memory order = getDefaultOrder();
         bytes32 orderHash = order.hash(solutionSettler.domainSeparator());
         bytes memory signature = abi.encode(order, tradingParams);
@@ -147,17 +155,21 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
 
     // This function calls `getTradeableOrder` and immediately checks that the
     // order is valid for the default commitment.
+    // This function use default AMOUNT IN
     function checkedGetTradeableOrder(
-        CConstantProduct.TradingParams memory tradingParams
+        TradingParams memory tradingParams
     ) internal view returns (GPv2Order.Data memory order) {
-        //TODO: this should be changed to helper function in the future
-        // order = constantProduct.getTradeableOrder(tradingParams);
-        // constantProduct.verify(tradingParams, order);
+        (order, , , ) = helper.order(
+            tradingParams,
+            address(constantProduct),
+            WETH,
+            DEFAULT_AMOUNT_IN_SWAP
+        );
+        constantProduct.verify(tradingParams, order);
     }
 
     function getDefaultOrder() internal view returns (GPv2Order.Data memory) {
-        CConstantProduct.TradingParams
-            memory tradingParams = getDefaultTradingParams();
+        TradingParams memory tradingParams = getDefaultTradingParams();
 
         return
             GPv2Order.Data({
@@ -184,11 +196,11 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
             constantProductAddress,
             address(this)
         );
-        setUpTokenForDeployment(
-            IERC20(WETH),
-            constantProductAddress,
-            address(this)
-        );
+        // setUpTokenForDeployment(
+        //     IERC20(WETH),
+        //     constantProductAddress,
+        //     address(this)
+        // );
     }
 
     function setUpTokenForDeployment(
@@ -196,12 +208,13 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         address constantProductAddress,
         address owner
     ) internal {
-        mockSafeApprove(
-            token,
-            constantProductAddress,
-            solutionSettler.vaultRelayer()
-        );
-        mockSafeApprove(token, constantProductAddress, owner);
+        console.log("!");
+        console.log(">", address(solutionSettler));
+        console.log(">", address(vaultRelayer));
+        console.log(">", address(solutionSettler.vaultRelayer()));
+        console.log("!");
+        // mockSafeApprove(token, constantProductAddress, vaultRelayer);
+        // mockSafeApprove(token, constantProductAddress, owner);
     }
 
     function mockSafeApprove(
@@ -209,8 +222,8 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
         address owner,
         address spender
     ) internal {
-        mockZeroAllowance(token, owner, spender);
-        mockApprove(token, spender);
+        // mockZeroAllowance(token, owner, spender);
+        // mockApprove(token, spender);
     }
 
     function mockApprove(IERC20 token, address spender) internal {

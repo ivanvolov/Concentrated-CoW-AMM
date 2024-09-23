@@ -9,7 +9,7 @@ import {CConstantProductTestHarness} from "../CConstantProductTestHarness.sol";
 abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
     //TODO: uncomment
     // function testValidOrderParameters() public {
-    //     CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
+    //     TradingParams memory defaultTradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
     //     GPv2Order.Data memory order = checkedGetTradeableOrder(defaultTradingParams);
     //     // Test all parameters with the exception of sell/buy tokens and amounts
@@ -23,7 +23,7 @@ abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
     //     assertEq(order.buyTokenBalance, GPv2Order.BALANCE_ERC20);
     // }
     // function testOrderValidityMovesToNextBucket() public {
-    //     CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
+    //     TradingParams memory defaultTradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
     //     GPv2Order.Data memory order;
     //     order = checkedGetTradeableOrder(defaultTradingParams);
@@ -37,7 +37,7 @@ abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
     //     assertEq(order.validTo, 2 * constantProduct.MAX_ORDER_DURATION());
     // }
     // function testRevertsIfAmountTooLowOnSellToken() public {
-    //     CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
+    //     TradingParams memory defaultTradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
     //     // The revert message depends on the block. To make this more visible,
     //     // we set an arbitrary block number.
@@ -58,7 +58,7 @@ abstract contract ValidateOrderParametersTest is CConstantProductTestHarness {
     //     constantProduct.getTradeableOrder(defaultTradingParams);
     // }
     // function testRevertsIfAmountTooLowOnBuyToken() public {
-    //     CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
+    //     TradingParams memory defaultTradingParams = getDefaultTradingParams();
     //     setUpDefaultReserves(address(constantProduct));
     //     // The revert message depends on the block. To make this more visible,
     //     // we set an arbitrary block number.

@@ -28,7 +28,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
 
     //     require(constantProduct.commitment() == constantProduct.EMPTY_COMMITMENT(), "test expects unset commitment");
 
-    //     CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
+    //     TradingParams memory defaultTradingParams = getDefaultTradingParams();
     //     constantProduct.enableTrading(defaultTradingParams);
 
     //     GPv2Order.Data memory order = constantProduct.getTradeableOrder(defaultTradingParams);
@@ -43,7 +43,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
 
     //     require(constantProduct.commitment() == constantProduct.EMPTY_COMMITMENT(), "test expects unset commitment");
 
-    //     CConstantProduct.TradingParams memory defaultTradingParams = getDefaultTradingParams();
+    //     TradingParams memory defaultTradingParams = getDefaultTradingParams();
     //     constantProduct.enableTrading(defaultTradingParams);
 
     //     GPv2Order.Data memory originalOrder = constantProduct.getTradeableOrder(defaultTradingParams);
@@ -162,7 +162,7 @@ abstract contract EnforceCommitmentTest is CConstantProductTestHarness {
 
     // function expectRevertIsValidSignature(
     //     bytes memory revertDataMask,
-    //     CConstantProduct.TradingParams memory tradingParams,
+    //     TradingParams memory tradingParams,
     //     GPv2Order.Data memory order
     // ) private {
     //     bytes32 orderHash = order.hash(solutionSettler.domainSeparator());

@@ -28,7 +28,7 @@ abstract contract CreateAMM is CConstantProductFactoryTestHarness {
     //     );
     //     assertEq(address(amm.token0()), address(mockableToken0));
     //     assertEq(address(amm.token1()), address(mockableToken1));
-    //     CConstantProduct.TradingParams memory params = CConstantProduct.TradingParams({
+    //     TradingParams memory params = TradingParams({
     //         minTradedToken0: minTradedToken0,
     //         priceOracle: defaultPriceOracle,
     //         priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
@@ -57,7 +57,7 @@ abstract contract CreateAMM is CConstantProductFactoryTestHarness {
     //         DEFAULT_PRICE_UPPER_X96,
     //         DEFAULT_PRICE_LOWER_X96
     //     );
-    //     CConstantProduct.TradingParams memory params = CConstantProduct.TradingParams({
+    //     TradingParams memory params = TradingParams({
     //         minTradedToken0: minTradedToken0,
     //         priceOracle: defaultPriceOracle,
     //         priceOracleData: DEFAULT_PRICE_ORACLE_DATA,
@@ -123,7 +123,7 @@ abstract contract CreateAMM is CConstantProductFactoryTestHarness {
     //     setUpOracleResponse(
     //         DEFAULT_NEW_PRICE_X96, address(defaultPriceOracle), address(mockableToken0), address(mockableToken1)
     //     );
-    //     CConstantProduct.TradingParams memory params = CConstantProduct.TradingParams({
+    //     TradingParams memory params = TradingParams({
     //         minTradedToken0: minTradedToken0,
     //         priceOracle: defaultPriceOracle,
     //         priceOracleData: DEFAULT_PRICE_ORACLE_DATA,

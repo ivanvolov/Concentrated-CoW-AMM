@@ -22,7 +22,7 @@ abstract contract CConstantProductFactoryTestHarness is
     // // unused parameters with arbitrary data.
     // function getTradeableOrderWithSignatureWrapper(
     //     CConstantProduct amm,
-    //     CConstantProduct.TradingParams memory tradingParams
+    //     TradingParams memory tradingParams
     // ) internal view returns (GPv2Order.Data memory order, bytes memory signature) {
     //     IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams(
     //         IConditionalOrder(address(constantProductFactory)),
