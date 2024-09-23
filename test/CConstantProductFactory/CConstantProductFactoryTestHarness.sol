@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import {CConstantProductFactory, ICPriceOracle, CConstantProduct, GPv2Order, IConditionalOrder, ISettlement, IERC20} from "src/CConstantProductFactory.sol";
+import {CConstantProductFactory, CConstantProduct, GPv2Order, IConditionalOrder, ISettlement, IERC20} from "src/CConstantProductFactory.sol";
 
 import {CConstantProductTestHarness} from "test/CConstantProduct/CConstantProductTestHarness.sol";
 
@@ -11,7 +11,6 @@ abstract contract CConstantProductFactoryTestHarness is
     //TODO: uncomment
     // uint256 minTradedToken0 = 42;
     // bytes32 defaultAppData = keccak256("Create: app data");
-    // ICPriceOracle defaultPriceOracle = ICPriceOracle(makeAddr("Create: price oracle"));
     // CConstantProductFactory internal constantProductFactory;
     // IERC20 internal mockableToken0 = IERC20(makeAddr("CConstantProductFactoryTestHarness: mockable token 0"));
     // IERC20 internal mockableToken1 = IERC20(makeAddr("CConstantProductFactoryTestHarness: mockable token 1"));

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import {ICPriceOracle, CConstantProduct, IERC20} from "src/CConstantProductFactory.sol";
+import {CConstantProduct, IERC20} from "src/CConstantProductFactory.sol";
 
 import {CConstantProductFactoryTestHarness} from "../CConstantProductFactoryTestHarness.sol";
 

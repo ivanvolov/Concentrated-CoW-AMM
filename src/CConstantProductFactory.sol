@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {ComposableCoW, IConditionalOrder} from "lib/composable-cow/src/ComposableCoW.sol";
 import {SafeERC20} from "lib/openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {CConstantProduct, IERC20, OZIERC20, ISettlement, GPv2Order, ICPriceOracle} from "./CConstantProduct.sol";
+import {CConstantProduct, IERC20, OZIERC20, ISettlement, GPv2Order} from "./CConstantProduct.sol";
 import {CMathLib} from "./libraries/CMathLib.sol";
 
 /**

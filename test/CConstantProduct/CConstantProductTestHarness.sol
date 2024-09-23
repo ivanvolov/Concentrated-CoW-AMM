@@ -2,10 +2,9 @@
 pragma solidity ^0.8.24;
 
 import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.t.sol";
-import {CConstantProduct, GPv2Order, IERC20} from "src/CConstantProduct.sol";
+import {CConstantProduct, GPv2Order, IERC20, TradingParams} from "src/CConstantProduct.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
 import {CMathLib} from "src/libraries/CMathLib.sol";
-import {ICPriceOracle} from "src/interfaces/ICPriceOracle.sol";
 
 abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     using GPv2Order for GPv2Order.Data;
@@ -13,7 +12,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     struct SignatureData {
         GPv2Order.Data order;
         bytes32 orderHash;
-        CConstantProduct.TradingParams tradingParams;
+        TradingParams tradingParams;
         bytes signature;
     }
 

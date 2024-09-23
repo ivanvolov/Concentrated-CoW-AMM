@@ -7,7 +7,7 @@ import {SafeERC20} from "lib/openzeppelin/contracts/token/ERC20/utils/SafeERC20.
 import {Math} from "lib/openzeppelin/contracts/utils/math/Math.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "lib/composable-cow/src/types/ConditionalOrdersUtilsLib.sol";
 import {IConditionalOrder, GPv2Order, IERC20} from "lib/composable-cow/src/BaseConditionalOrder.sol";
-import {ICPriceOracle} from "./interfaces/ICPriceOracle.sol";
+import {ICConstantProduct, TradingParams} from "./interfaces/ICConstantProduct.sol";
 import {ISettlement} from "./interfaces/ISettlement.sol";
 import {IWatchtowerCustomErrors} from "./interfaces/IWatchtowerCustomErrors.sol";
 import {CMathLib} from "./libraries/CMathLib.sol";
@@ -20,27 +20,11 @@ import {CMathLib} from "./libraries/CMathLib.sol";
  * its orders.
  * Order creation and execution is based on the Composable CoW base contracts.
  */
-contract CConstantProduct is IERC1271 {
+contract CConstantProduct is IERC1271, ICConstantProduct {
     using SafeERC20 for OZIERC20;
     using GPv2Order for GPv2Order.Data;
 
-    /// All data used by an order to validate the AMM conditions.
-    struct TradingParams {
-        /// The minimum amount of token0 that needs to be traded for an order
-        /// to be created on getTradeableOrder.
-        uint256 minTradedToken0;
-        /// The app data that must be used in the order.
-        /// See `GPv2Order.Data` for more information on the app data.
-        bytes32 appData;
-        /// The price of the token0 at the moment of the last deposit.
-        uint160 sqrtPriceDepositX96;
-        /// The price upper bound of the AMM.
-        uint160 sqrtPriceUpperX96;
-        /// The price lower bound of the AMM.
-        uint160 sqrtPriceLowerX96;
-        uint128 liquidity;
-    }
-
+    uint128 public lastLiquidity;
     uint160 public lastSqrtPriceX96;
     uint256 public lastBalance0;
     uint256 public lastBalance1;
@@ -203,6 +187,7 @@ contract CConstantProduct is IERC1271 {
         tradingParamsHash = _tradingParamsHash;
         lastBalance0 = IERC20(token0).balanceOf(address(this));
         lastBalance1 = IERC20(token1).balanceOf(address(this));
+        lastLiquidity = tradingParams.liquidity;
         emit TradingEnabled(_tradingParamsHash, tradingParams);
     }
 

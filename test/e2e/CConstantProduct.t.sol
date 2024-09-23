@@ -7,7 +7,6 @@ import {CConstantProduct, IERC20, ISettlement} from "src/CConstantProduct.sol";
 import {CConstantProductFactory, IConditionalOrder} from "src/CConstantProductFactory.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
 
-import {ICPriceOracle} from "src/interfaces/ICPriceOracle.sol";
 import {CMathLib} from "src/libraries/CMathLib.sol";
 
 import {TestAccount, TestAccountLib} from "lib/composable-cow/test/libraries/TestAccountLib.t.sol";
