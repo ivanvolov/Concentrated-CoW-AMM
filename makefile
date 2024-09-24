@@ -3,6 +3,6 @@ ta:
 tal:
 	clear && forge test -vvvv --no-match-test "fork|[fF]uzz"
 t:
-	clear && forge test -vv --match-contract ValidateUniswapV3Math --match-test "test"
+	clear && forge test -vv --match-test "testZeroCommitRevertsForOrdersOtherThanTradeableOrder"
 tl:
-	clear && forge test -vvvv --match-contract ValidateUniswapV3Math --match-test "test"
+	clear && forge test -vvvv --match-test "testZeroCommitRevertsForOrdersOtherThanTradeableOrder"
