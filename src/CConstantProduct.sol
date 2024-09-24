@@ -12,8 +12,6 @@ import {ISettlement} from "./interfaces/ISettlement.sol";
 import {IWatchtowerCustomErrors} from "./interfaces/IWatchtowerCustomErrors.sol";
 import {CMathLib} from "./libraries/CMathLib.sol";
 
-import "forge-std/console.sol";
-
 /**
  * @title Concentrated CoW AMM
  * @author IVikkk
@@ -422,8 +420,6 @@ contract CConstantProduct is IERC1271, ICConstantProduct {
             if (committedOrderHash != EMPTY_COMMITMENT) {
                 revert OrderDoesNotMatchCommitmentHash();
             }
-
-            //TODO: I removed default order commitment match, think about if it is safe.
         }
     }
 

@@ -6,8 +6,6 @@ import {CConstantProductTestHarness} from "../CConstantProductTestHarness.sol";
 import {CMathLib} from "src/libraries/CMathLib.sol";
 import {TradingParams} from "src/interfaces/ICConstantProduct.sol";
 
-import "forge-std/console.sol";
-
 abstract contract ValidateUniswapV3Math is CConstantProductTestHarness {
     function testReturnedTradeValues() public {
         TradingParams memory defaultTradingParams = setUpDefaultTradingParams();

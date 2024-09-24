@@ -8,8 +8,6 @@ import {TradingParams, ICConstantProduct} from "src/interfaces/ICConstantProduct
 import {CMathLib} from "src/libraries/CMathLib.sol";
 import {CCoWHelper} from "src/CCoWHelper.sol";
 
-import "forge-std/console.sol";
-
 abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
     using GPv2Order for GPv2Order.Data;
 

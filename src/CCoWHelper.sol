@@ -8,8 +8,6 @@ import {ICConstantProduct, TradingParams} from "./interfaces/ICConstantProduct.s
 import {CConstantProduct} from "./CConstantProduct.sol";
 import {IERC20} from "lib/composable-cow/src/BaseConditionalOrder.sol";
 
-import "forge-std/console.sol";
-
 import {ConditionalOrdersUtilsLib as Utils} from "lib/composable-cow/src/types/ConditionalOrdersUtilsLib.sol";
 
 /**
