@@ -4,39 +4,50 @@ pragma solidity ^0.8.24;
 import {CConstantProductFactory, CConstantProduct, GPv2Order, IConditionalOrder, ISettlement, IERC20} from "src/CConstantProductFactory.sol";
 
 import {CConstantProductTestHarness} from "test/CConstantProduct/CConstantProductTestHarness.sol";
+import {TradingParams, ICConstantProduct} from "src/interfaces/ICConstantProduct.sol";
 
 abstract contract CConstantProductFactoryTestHarness is
     CConstantProductTestHarness
 {
-    //TODO: uncomment
-    // uint256 minTradedToken0 = 42;
-    // bytes32 defaultAppData = keccak256("Create: app data");
-    // CConstantProductFactory internal constantProductFactory;
-    // IERC20 internal mockableToken0 = IERC20(makeAddr("CConstantProductFactoryTestHarness: mockable token 0"));
-    // IERC20 internal mockableToken1 = IERC20(makeAddr("CConstantProductFactoryTestHarness: mockable token 1"));
-    // function setUp() public virtual override(CConstantProductTestHarness) {
-    //     super.setUp();
-    //     constantProductFactory = new CConstantProductFactory(solutionSettler);
-    // }
-    // // This function calls `getTradeableOrderWithSignature` while filling all
-    // // unused parameters with arbitrary data.
-    // function getTradeableOrderWithSignatureWrapper(
-    //     CConstantProduct amm,
-    //     TradingParams memory tradingParams
-    // ) internal view returns (GPv2Order.Data memory order, bytes memory signature) {
-    //     IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams(
-    //         IConditionalOrder(address(constantProductFactory)),
-    //         keccak256("CConstantProductFactoryTestHarness: some salt"),
-    //         abi.encode(tradingParams)
-    //     );
-    //     return constantProductFactory.getTradeableOrderWithSignature(
-    //         amm, params, bytes("CConstantProductFactoryTestHarness: offchainData"), new bytes32[](2)
-    //     );
-    // }
-    // function mocksForTokenCreation(address constantProductAddress) internal {
-    //     setUpTokenForDeployment(mockableToken0, constantProductAddress, address(constantProductFactory));
-    //     setUpTokenForDeployment(mockableToken1, constantProductAddress, address(constantProductFactory));
-    // }
+    uint256 minTradedToken0 = 42;
+    bytes32 defaultAppData = keccak256("Create: app data");
+    CConstantProductFactory internal constantProductFactory;
+    IERC20 internal mockableToken0 =
+        IERC20(
+            makeAddr("CConstantProductFactoryTestHarness: mockable token 0")
+        );
+    IERC20 internal mockableToken1 =
+        IERC20(
+            makeAddr("CConstantProductFactoryTestHarness: mockable token 1")
+        );
+
+    function setUp() public virtual override(CConstantProductTestHarness) {
+        super.setUp();
+        constantProductFactory = new CConstantProductFactory(solutionSettler);
+    }
+
+    function mocksForTokenCreation(address constantProductAddress) internal {
+        setUpTokenForDeployment(
+            mockableToken0,
+            constantProductAddress,
+            address(constantProductFactory)
+        );
+        vm.mockCall(
+            address(mockableToken0),
+            abi.encodeCall(IERC20.balanceOf, (constantProductAddress)),
+            abi.encode(0)
+        );
+        setUpTokenForDeployment(
+            mockableToken1,
+            constantProductAddress,
+            address(constantProductFactory)
+        );
+        vm.mockCall(
+            address(mockableToken1),
+            abi.encodeCall(IERC20.balanceOf, (constantProductAddress)),
+            abi.encode(0)
+        );
+    }
 }
 
 contract EditableOwnerCConstantProductFactory is CConstantProductFactory {

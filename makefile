@@ -3,6 +3,6 @@ ta:
 tal:
 	clear && forge test -vvvv --no-match-test "fork|[fF]uzz"
 t:
-	clear && forge test -vv --match-test "testDisableTradingDoesNotRevert"
+	clear && forge test -vv --match-test "testNewAMMEnablesTrading"
 tl:
-	clear && forge test -vvvv --match-test "testDisableTradingDoesNotRevert"
+	clear && forge test -vvvv --match-test "testNewAMMEnablesTrading"

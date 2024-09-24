@@ -92,33 +92,6 @@ contract CConstantProductFactory {
         emit Deployed(amm, ammOwner, token0, token1);
         owner[amm] = ammOwner;
 
-        _enableTrading(
-            amm,
-            getDataAndDeposit(
-                amm,
-                liquidity,
-                minTradedToken0,
-                appData,
-                sqrtPriceDepositX96,
-                sqrtPriceUpperX96,
-                sqrtPriceLowerX96
-            )
-        );
-    }
-
-    /**
-     * @notice This function is to avoid stack too deep.
-     */
-    //TODO: remove this cause no stack to deep
-    function getDataAndDeposit(
-        CConstantProduct amm,
-        uint128 liquidity,
-        uint256 minTradedToken0,
-        bytes32 appData,
-        uint160 sqrtPriceDepositX96,
-        uint160 sqrtPriceUpperX96,
-        uint160 sqrtPriceLowerX96
-    ) internal returns (TradingParams memory data) {
         (uint256 amount0, uint256 amount1) = CMathLib
             .getAmountsFromLiquiditySqrtPriceX96(
                 sqrtPriceDepositX96,
@@ -127,7 +100,9 @@ contract CConstantProductFactory {
                 liquidity
             );
         deposit(amm, amount0, amount1);
-        return
+
+        _enableTrading(
+            amm,
             TradingParams({
                 minTradedToken0: minTradedToken0,
                 appData: appData,
@@ -135,7 +110,8 @@ contract CConstantProductFactory {
                 sqrtPriceUpperX96: sqrtPriceUpperX96,
                 sqrtPriceLowerX96: sqrtPriceLowerX96,
                 liquidity: liquidity
-            });
+            })
+        );
     }
 
     /**

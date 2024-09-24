@@ -14,6 +14,7 @@ import {ConditionalOrdersUtilsLib as Utils} from "lib/composable-cow/src/types/C
 
 /**
  * @title CCoWHelper
+ * @author IVikkk
  * @notice Helper contract that allows to create orders for Concentrated CoW AMM.
  * @dev This contract supports only 2-token equal-weights pools.
  */
