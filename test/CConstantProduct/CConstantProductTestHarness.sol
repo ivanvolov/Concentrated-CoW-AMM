@@ -153,6 +153,7 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
 
     function defaultSignatureAndHashes()
         internal
+        view
         returns (SignatureData memory out)
     {
         TradingParams memory tradingParams = getDefaultTradingParams();
@@ -187,8 +188,8 @@ abstract contract CConstantProductTestHarness is BaseComposableCoWTest {
                 sellToken: IERC20(USDC),
                 buyToken: IERC20(WETH),
                 receiver: GPv2Order.RECEIVER_SAME_AS_OWNER,
-                sellAmount: 4779728434348080898426,
-                buyAmount: 1000512716629909196,
+                sellAmount: 2443057171472315338741,
+                buyAmount: 500000000000000000,
                 validTo: uint32(block.timestamp) +
                     constantProduct.MAX_ORDER_DURATION() /
                     2,

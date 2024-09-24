@@ -127,13 +127,6 @@ contract CConstantProduct is IERC1271, ICConstantProduct {
      */
     error OrderDoesNotMatchCommitmentHash();
     /**
-     * @notice If an AMM order is settled and the AMM committment is set to
-     * empty, then that order must match the output of `getTradeableOrder`.
-     * This error is thrown when some of the parameters don't match the expected
-     * ones.
-     */
-    error OrderDoesNotMatchDefaultTradeableOrder();
-    /**
      * @notice On signature verification, the hash of the order supplied as part
      * of the signature does not match the provided message hash.
      * This usually means that the verification function is being provided a
