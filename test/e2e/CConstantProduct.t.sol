@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {BaseComposableCoWTest} from "lib/composable-cow/test/ComposableCoW.base.t.sol";
 
 import {CConstantProduct, IERC20, ISettlement} from "src/CConstantProduct.sol";
-import {CConstantProductFactory, IConditionalOrder} from "src/CConstantProductFactory.sol";
+import {CConstantProductFactory, IConditionalOrder, TradingParams} from "src/CConstantProductFactory.sol";
 import {ISettlement} from "src/interfaces/ISettlement.sol";
 
 import {CMathLib} from "src/libraries/CMathLib.sol";
@@ -15,26 +15,29 @@ import {GPv2TradeEncoder} from "lib/composable-cow/test/vendored/GPv2TradeEncode
 import {IERC20, GPv2Settlement, GPv2Order, GPv2Trade, GPv2Interaction, GPv2Signing} from "cowprotocol/contracts/GPv2Settlement.sol";
 
 contract E2EConditionalOrderTest is BaseComposableCoWTest {
+    //TODO: update this to new helper & version without oracle.
     // using GPv2Order for GPv2Order.Data;
     // using TestAccountLib for TestAccount;
-    // bytes DEFAULT_PRICE_ORACLE_DATA = bytes("some price oracle data");
-    // uint160 DEFAULT_PRICE_UPPER_X96 = CMathLib.getSqrtPriceFromPrice(5500 ether);
-    // uint160 DEFAULT_PRICE_LOWER_X96 = CMathLib.getSqrtPriceFromPrice(4545 ether);
-    // uint160 DEFAULT_PRICE_CURRENT_X96 = CMathLib.getSqrtPriceFromPrice(5000 ether);
+    // uint160 DEFAULT_PRICE_UPPER_X96 =
+    //     CMathLib.getSqrtPriceFromPrice(5500 ether);
+    // uint160 DEFAULT_PRICE_LOWER_X96 =
+    //     CMathLib.getSqrtPriceFromPrice(4545 ether);
+    // uint160 DEFAULT_PRICE_CURRENT_X96 =
+    //     CMathLib.getSqrtPriceFromPrice(5000 ether);
     // uint160 DEFAULT_NEW_PRICE_X96 = CMathLib.getSqrtPriceFromPrice(4565 ether);
     // uint128 DEFAULT_LIQUIDITY = 1518129116516325613903;
     // address public constant owner = 0x1234567890123456789012345678901234567890;
     // IERC20 public DAI;
     // IERC20 public WETH;
     // CConstantProductFactory ammFactory;
-    // PriceOracle priceOracle;
     // CConstantProduct amm;
     // function setUp() public virtual override(BaseComposableCoWTest) {
     //     super.setUp();
     //     DAI = token0;
     //     WETH = token1;
-    //     ammFactory = new CConstantProductFactory(ISettlement(address(settlement)));
-    //     priceOracle = new PriceOracle();
+    //     ammFactory = new CConstantProductFactory(
+    //         ISettlement(address(settlement))
+    //     );
     // }
     // function testE2ESettle() public {
     //     uint256 startAmountDai = 998995580131581598;
@@ -50,17 +53,13 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //     assertEq(WETH.balanceOf(owner), startAmountWeth);
     //     uint256 minTradedToken0 = 0;
     //     bytes32 appData = keccak256("order app data");
-    //     setUpOracleResponse(
-    //         DEFAULT_PRICE_CURRENT_X96, address(priceOracle), address(DAI), address(WETH), DEFAULT_PRICE_ORACLE_DATA
-    //     );
     //     amm = ammFactory.create(
     //         DAI,
     //         WETH,
     //         DEFAULT_LIQUIDITY,
     //         minTradedToken0,
-    //         priceOracle,
-    //         DEFAULT_PRICE_ORACLE_DATA,
     //         appData,
+    //         DEFAULT_PRICE_CURRENT_X96
     //         DEFAULT_PRICE_UPPER_X96,
     //         DEFAULT_PRICE_LOWER_X96
     //     );
@@ -70,9 +69,6 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //     assertEq(WETH.balanceOf(owner), 0);
     //     assertEq(DAI.balanceOf(address(amm)), startAmountDai);
     //     assertEq(WETH.balanceOf(address(amm)), startAmountWeth);
-    //     setUpOracleResponse(
-    //         DEFAULT_NEW_PRICE_X96, address(priceOracle), address(DAI), address(WETH), DEFAULT_PRICE_ORACLE_DATA
-    //     );
     //     TradingParams memory data = TradingParams({
     //         minTradedToken0: minTradedToken0,
     //         priceOracle: priceOracle,
@@ -82,10 +78,19 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //         sqrtPriceUpperX96: DEFAULT_PRICE_UPPER_X96,
     //         sqrtPriceLowerX96: DEFAULT_PRICE_LOWER_X96
     //     });
-    //     IConditionalOrder.ConditionalOrderParams memory params =
-    //         super.createOrder(IConditionalOrder(address(ammFactory)), keccak256("e2e:any salt"), abi.encode(data));
-    //     (GPv2Order.Data memory order, bytes memory sig) =
-    //         ammFactory.getTradeableOrderWithSignature(amm, params, hex"", new bytes32[](0));
+    //     IConditionalOrder.ConditionalOrderParams memory params = super
+    //         .createOrder(
+    //             IConditionalOrder(address(ammFactory)),
+    //             keccak256("e2e:any salt"),
+    //             abi.encode(data)
+    //         );
+    //     (GPv2Order.Data memory order, bytes memory sig) = ammFactory
+    //         .getTradeableOrderWithSignature(
+    //             amm,
+    //             params,
+    //             hex"",
+    //             new bytes32[](0)
+    //         );
     //     // The trade will be settled against bob.
     //     uint256 bobWethBefore = WETH.balanceOf(bob.addr);
     //     uint256 bobDaiBefore = 1000512716629909195;
@@ -99,7 +104,10 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //     uint256 endBalanceDai = DAI.balanceOf(address(amm));
     //     uint256 endBalanceWeth = WETH.balanceOf(address(amm));
     //     assertEq(bobDaiBefore + startAmountDai, endBalanceDai);
-    //     assertEq(endBalanceWeth + WETH.balanceOf(bob.addr) - bobWethBefore, startAmountWeth);
+    //     assertEq(
+    //         endBalanceWeth + WETH.balanceOf(bob.addr) - bobWethBefore,
+    //         startAmountWeth
+    //     );
     //     vm.prank(owner);
     //     ammFactory.disableTrading(amm);
     //     vm.prank(owner);
@@ -107,19 +115,6 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //     // Funds have been transferred to the owner.
     //     assertEq(DAI.balanceOf(owner), endBalanceDai);
     //     assertEq(WETH.balanceOf(owner), endBalanceWeth);
-    // }
-    // function setUpOracleResponse(
-    //     uint160 newSqrtPriceX96,
-    //     address oracle,
-    //     address token0,
-    //     address token1,
-    //     bytes memory priceOracleData
-    // ) public {
-    //     vm.mockCall(
-    //         oracle,
-    //         abi.encodeCall(ICPriceOracle.getSqrtPriceX96, (token0, token1, priceOracleData)),
-    //         abi.encode(newSqrtPriceX96)
-    //     );
     // }
     // /**
     //  * Settle a CoW Protocol Order
@@ -153,11 +148,15 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //         buyTokenBalance: GPv2Order.BALANCE_ERC20,
     //         sellTokenBalance: GPv2Order.BALANCE_ERC20
     //     });
-    //     bytes memory counterPartySig =
-    //         counterParty.signPacked(GPv2Order.hash(counterOrder, settlement.domainSeparator()));
+    //     bytes memory counterPartySig = counterParty.signPacked(
+    //         GPv2Order.hash(counterOrder, settlement.domainSeparator())
+    //     );
     //     // Authorize the GPv2VaultRelayer to spend bob's sell token
     //     vm.prank(counterParty.addr);
-    //     IERC20(counterOrder.sellToken).approve(address(relayer), counterOrder.sellAmount);
+    //     IERC20(counterOrder.sellToken).approve(
+    //         address(relayer),
+    //         counterOrder.sellAmount
+    //     );
     //     // first declare the tokens we will be trading
     //     IERC20[] memory tokens = new IERC20[](2);
     //     tokens[0] = IERC20(order.sellToken);
@@ -178,7 +177,10 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //         validTo: order.validTo,
     //         appData: order.appData,
     //         feeAmount: order.feeAmount,
-    //         flags: GPv2TradeEncoder.encodeFlags(order, GPv2Signing.Scheme.Eip1271),
+    //         flags: GPv2TradeEncoder.encodeFlags(
+    //             order,
+    //             GPv2Signing.Scheme.Eip1271
+    //         ),
     //         executedAmount: order.sellAmount,
     //         signature: abi.encodePacked(who, bundleBytes)
     //     });
@@ -192,17 +194,26 @@ contract E2EConditionalOrderTest is BaseComposableCoWTest {
     //         validTo: counterOrder.validTo,
     //         appData: counterOrder.appData,
     //         feeAmount: counterOrder.feeAmount,
-    //         flags: GPv2TradeEncoder.encodeFlags(counterOrder, GPv2Signing.Scheme.Eip712),
+    //         flags: GPv2TradeEncoder.encodeFlags(
+    //             counterOrder,
+    //             GPv2Signing.Scheme.Eip712
+    //         ),
     //         executedAmount: counterOrder.sellAmount,
     //         signature: counterPartySig
     //     });
     //     // fourth declare the interactions
-    //     GPv2Interaction.Data[][3] memory interactions =
-    //         [new GPv2Interaction.Data[](0), new GPv2Interaction.Data[](0), new GPv2Interaction.Data[](1)];
+    //     GPv2Interaction.Data[][3] memory interactions = [
+    //         new GPv2Interaction.Data[](0),
+    //         new GPv2Interaction.Data[](0),
+    //         new GPv2Interaction.Data[](1)
+    //     ];
     //     interactions[2][0] = GPv2Interaction.Data({
     //         target: address(amm),
     //         value: 0,
-    //         callData: abi.encodeWithSelector(amm.postHook.selector, tradingParams)
+    //         callData: abi.encodeWithSelector(
+    //             amm.postHook.selector,
+    //             tradingParams
+    //         )
     //     });
     //     // finally we can execute the settlement
     //     vm.prank(solver.addr);
