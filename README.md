@@ -4,7 +4,7 @@ An experimental modification of the CoW AMM that introduces **concentrated liqui
 
 This implementation allows liquidity providers to allocate capital within **custom price ranges**, similar to Uniswap V3, while integrating with the **CoW Protocol order flow and solver architecture**.
 
-The project was developed as part of a grant proposal for **CoW DAO**, aiming to improve LP capital efficiency in the CoW Protocol ecosystem.
+The project was developed as part of a grant proposal for [**CoW DAO**](https://forum.cow.fi/t/grant-application-concentrated-liquidity-cow-amm-rehypothecation-adapter/2632), aiming to improve LP capital efficiency in the CoW Protocol ecosystem.
 
 ## Features
 
